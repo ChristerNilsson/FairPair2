@@ -1,0 +1,47 @@
+STANDINGS for FairPair 3 after Round 1
+
+Pos  Id  Elo Name                          1      PR      EPR
+  1   1 1970 WEDIN Svante                 2o1   4000.0   2074.8
+  2   3 1838 PERSSON Kjell                4•1   4000.0   1985.8
+  3   5 1771 LEHVONEN Jouko               6o1   4000.0   1946.8
+  4   7 1753 RAZAVI Abbas                 8•1   4000.0   1915.8
+  5  10 1570 LIISTAMO Jouko               9•1   4000.0   1793.8
+  6  12 1425 RADON Vida                  11o1   4000.0   1666.8
+  7   2 1884 SILINS Peter                 1•0      0.0   1779.2
+  8   4 1795 AIKIO Onni                   3o0      0.0   1647.2
+  9   6 1756 ANDERSSON Lars-Owe           5•0      0.0   1580.2
+ 10   8 1725 WENNSTRÖM Bertil             7o0      0.0   1562.2
+ 11   9 1603 STEINER Bo                  10o0      0.0   1379.2
+ 12  11 1476 ELDIN Peter                 12•0      0.0   1234.2
+
+NAMES for FairPair 3 in Round 2
+
+Table Name
+  2 • AIKIO Onni
+  4 o ANDERSSON Lars-Owe
+  5 o ELDIN Peter
+  3 • LEHVONEN Jouko
+  6 o LIISTAMO Jouko
+  1 o PERSSON Kjell
+  6 • RADON Vida
+  3 o RAZAVI Abbas
+  2 o SILINS Peter
+  5 • STEINER Bo
+  1 • WEDIN Svante
+  4 • WENNSTRÖM Bertil
+
+TABLES for FairPair 3 in Round 2
+
+Table      o                                                   •
+
+  1   1838 PERSSON Kjell               |____| - |____|    1970 WEDIN Svante             
+
+  2   1884 SILINS Peter                |____| - |____|    1795 AIKIO Onni               
+
+  3   1753 RAZAVI Abbas                |____| - |____|    1771 LEHVONEN Jouko           
+
+  4   1756 ANDERSSON Lars-Owe          |____| - |____|    1725 WENNSTRÖM Bertil         
+
+  5   1476 ELDIN Peter                 |____| - |____|    1603 STEINER Bo               
+
+  6   1570 LIISTAMO Jouko              |____| - |____|    1425 RADON Vida               

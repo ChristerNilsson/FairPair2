@@ -1,0 +1,15 @@
+ROUND=0
+TITLE=Premiär
+DATE=2024-09-25
+TPP=30
+PPP=60
+PAUSED=
+
+1720!Dan Israel
+1713!Dimitri Konstantinov
+1680!Lars Ove Andersson
+1660!Sten Dillen
+1614!Elfia Salejeva
+1508!Anders Nystrand
+1470!Peter Eldin
+1430!Vida Radon

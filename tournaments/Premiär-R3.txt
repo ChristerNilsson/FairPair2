@@ -1,0 +1,15 @@
+ROUND=3
+TITLE=Premiär
+DATE=2024-09-25
+TPP=30
+PPP=60
+PAUSED=
+
+1720!Dan Israel!1w2!2b0!3w2
+1713!Dimitri Konstantinov!0b0!3w2!2w0
+1680!Lars Ove Andersson!3b2!0w2!1b2
+1660!Sten Dillen!2w0!1b0!0b0
+1614!Elfia Salejeva!5w0!6b0!7w0
+1508!Anders Nystrand!4b2!7w1!6w2
+1470!Peter Eldin!7b0!4w2!5b0
+1430!Vida Radon!6w2!5b1!4b2

@@ -1,0 +1,47 @@
+STANDINGS for FairPair 3 after Round 2
+
+Pos  Id  Elo Name                          1     2      PR      EPR
+  1   1 1970 WEDIN Svante                 2o1   3•1   4000.0   2141.3
+  2  10 1570 LIISTAMO Jouko               9•1  12o1   4000.0   1803.6
+  3   5 1771 LEHVONEN Jouko               6o1   7•½   1945.4   1874.9
+  4   7 1753 RAZAVI Abbas                 8•1   5o½   1939.6   1868.8
+  5   3 1838 PERSSON Kjell                4•1   1o0   1882.5   1882.5
+  6   4 1795 AIKIO Onni                   3o0   2•1   1861.0   1861.0
+  7   6 1756 ANDERSSON Lars-Owe           5•0   8o1   1748.0   1748.0
+  8  12 1425 RADON Vida                  11o1  10•0   1523.0   1523.0
+  9  11 1476 ELDIN Peter                 12•0   9o1   1514.0   1514.0
+ 10   2 1884 SILINS Peter                 1•0   4o0      0.0   1593.2
+ 11   8 1725 WENNSTRÖM Bertil             7o0   6•0      0.0   1474.9
+ 12   9 1603 STEINER Bo                  10o0  11•0      0.0   1240.6
+
+NAMES for FairPair 3 in Round 3
+
+Table Name
+  1 • AIKIO Onni
+  3 o ANDERSSON Lars-Owe
+  5 • ELDIN Peter
+  4 o LEHVONEN Jouko
+  5 o LIISTAMO Jouko
+  2 • PERSSON Kjell
+  6 • RADON Vida
+  3 • RAZAVI Abbas
+  2 o SILINS Peter
+  6 o STEINER Bo
+  1 o WEDIN Svante
+  4 • WENNSTRÖM Bertil
+
+TABLES for FairPair 3 in Round 3
+
+Table      o                                                   •
+
+  1   1970 WEDIN Svante                |____| - |____|    1795 AIKIO Onni               
+
+  2   1884 SILINS Peter                |____| - |____|    1838 PERSSON Kjell            
+
+  3   1756 ANDERSSON Lars-Owe          |____| - |____|    1753 RAZAVI Abbas             
+
+  4   1771 LEHVONEN Jouko              |____| - |____|    1725 WENNSTRÖM Bertil         
+
+  5   1570 LIISTAMO Jouko              |____| - |____|    1476 ELDIN Peter              
+
+  6   1603 STEINER Bo                  |____| - |____|    1425 RADON Vida               

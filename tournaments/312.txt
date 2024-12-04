@@ -1,0 +1,314 @@
+TITLE=Tyresö Open 2024
+DATE=2024-05-03
+2416!Hampus Sörensen
+2413!Michael Wiedenkeller
+2366!Joar Ölund
+2335!Joar Östlund
+2272!Vidar Grahn
+2235!Leo Crevatin
+2213!Daniel Vesterbaek Pedersen
+2141!Victor Muntean
+2113!Filip Björkman
+2109!Vidar Seiger
+2108!Pratyush Tripathi
+2093!Erik Dingertz
+2076!Michael Duke
+2065!Matija Sakic
+2048!Michael Mattsson
+2046!Lukas Willstedt
+2039!Lavinia Valcu
+2035!Oliver Nilsson
+2031!Lennart Evertsson
+2022!Jussi Jakenberg
+2001!Aryan Banerjee
+1985!Tim Nordenfur
+1977!Elias Kingsley
+1954!Per Isaksson
+1944!Cristine Rose Mariano
+1936!Lo Ljungros
+1923!Herman Enholm
+1907!Carina Wickström
+1897!Joel Åhfeldt
+1896!Stefan Nyberg
+1893!Hans Rånby
+1889!Mikael Blom
+1886!Joar Berglund
+1885!Mikael Helin
+1880!Olle Ålgars
+1878!Jesper Borin
+1871!Khaschuluu Sergelenbaatar
+1852!Roy Karlsson
+1848!Fredrik Möllerström
+1846!Kenneth Fahlberg
+1835!Peder Gedda
+1833!Karam Masoudi
+1828!Christer Johansson
+1827!Anders Kallin
+1818!Morris Bergqvist
+1803!Martti Hamina
+1800!Björn Löfström
+1796!Nicholas Bychkov Zwahlen
+1794!Jonas Sandberg
+1793!Rohan Gore
+1787!Kjell Jernselius
+1783!Radu Cernea
+1778!Mukhtar Jamshedi
+1768!Neo Malmquist
+1763!Joacim Hultin
+1761!Lars-Åke Pettersson
+1748!André J Lindebaum
+1733!Lars Eriksson
+1733!Hugo Hardwick
+1728!Hugo Sundell
+1726!Simon Johansson
+1721!Jouni Kaunonen
+1709!Eddie Parteg
+1695!Sid Van Den Brink
+1691!Svante Nödtveidt
+1688!Anders Hillbur
+1680!Sayak Raj Bardhan
+1671!Salar Banavi
+1650!Patrik Wiss
+1641!Anton Nordenfur
+1624!Jens Ahlström
+1622!Hanns Ivar Uniyal
+1579!Christer Carmegren
+1575!Christer Nilsson
+1524!Måns Nödtveidt
+1480!Karl-Oskar Rehnberg
+1417!David Broman
+1406!Vida Radon
+2416!Hampus Sörensen
+2413!Michael Wiedenkeller
+2366!Joar Ölund
+2335!Joar Östlund
+2272!Vidar Grahn
+2235!Leo Crevatin
+2213!Daniel Vesterbaek Pedersen
+2141!Victor Muntean
+2113!Filip Björkman
+2109!Vidar Seiger
+2108!Pratyush Tripathi
+2093!Erik Dingertz
+2076!Michael Duke
+2065!Matija Sakic
+2048!Michael Mattsson
+2046!Lukas Willstedt
+2039!Lavinia Valcu
+2035!Oliver Nilsson
+2031!Lennart Evertsson
+2022!Jussi Jakenberg
+2001!Aryan Banerjee
+1985!Tim Nordenfur
+1977!Elias Kingsley
+1954!Per Isaksson
+1944!Cristine Rose Mariano
+1936!Lo Ljungros
+1923!Herman Enholm
+1907!Carina Wickström
+1897!Joel Åhfeldt
+1896!Stefan Nyberg
+1893!Hans Rånby
+1889!Mikael Blom
+1886!Joar Berglund
+1885!Mikael Helin
+1880!Olle Ålgars
+1878!Jesper Borin
+1871!Khaschuluu Sergelenbaatar
+1852!Roy Karlsson
+1848!Fredrik Möllerström
+1846!Kenneth Fahlberg
+1835!Peder Gedda
+1833!Karam Masoudi
+1828!Christer Johansson
+1827!Anders Kallin
+1818!Morris Bergqvist
+1803!Martti Hamina
+1800!Björn Löfström
+1796!Nicholas Bychkov Zwahlen
+1794!Jonas Sandberg
+1793!Rohan Gore
+1787!Kjell Jernselius
+1783!Radu Cernea
+1778!Mukhtar Jamshedi
+1768!Neo Malmquist
+1763!Joacim Hultin
+1761!Lars-Åke Pettersson
+1748!André J Lindebaum
+1733!Lars Eriksson
+1733!Hugo Hardwick
+1728!Hugo Sundell
+1726!Simon Johansson
+1721!Jouni Kaunonen
+1709!Eddie Parteg
+1695!Sid Van Den Brink
+1691!Svante Nödtveidt
+1688!Anders Hillbur
+1680!Sayak Raj Bardhan
+1671!Salar Banavi
+1650!Patrik Wiss
+1641!Anton Nordenfur
+1624!Jens Ahlström
+1622!Hanns Ivar Uniyal
+1579!Christer Carmegren
+1575!Christer Nilsson
+1524!Måns Nödtveidt
+1480!Karl-Oskar Rehnberg
+1417!David Broman
+1406!Vida Radon
+2416!Hampus Sörensen
+2413!Michael Wiedenkeller
+2366!Joar Ölund
+2335!Joar Östlund
+2272!Vidar Grahn
+2235!Leo Crevatin
+2213!Daniel Vesterbaek Pedersen
+2141!Victor Muntean
+2113!Filip Björkman
+2109!Vidar Seiger
+2108!Pratyush Tripathi
+2093!Erik Dingertz
+2076!Michael Duke
+2065!Matija Sakic
+2048!Michael Mattsson
+2046!Lukas Willstedt
+2039!Lavinia Valcu
+2035!Oliver Nilsson
+2031!Lennart Evertsson
+2022!Jussi Jakenberg
+2001!Aryan Banerjee
+1985!Tim Nordenfur
+1977!Elias Kingsley
+1954!Per Isaksson
+1944!Cristine Rose Mariano
+1936!Lo Ljungros
+1923!Herman Enholm
+1907!Carina Wickström
+1897!Joel Åhfeldt
+1896!Stefan Nyberg
+1893!Hans Rånby
+1889!Mikael Blom
+1886!Joar Berglund
+1885!Mikael Helin
+1880!Olle Ålgars
+1878!Jesper Borin
+1871!Khaschuluu Sergelenbaatar
+1852!Roy Karlsson
+1848!Fredrik Möllerström
+1846!Kenneth Fahlberg
+1835!Peder Gedda
+1833!Karam Masoudi
+1828!Christer Johansson
+1827!Anders Kallin
+1818!Morris Bergqvist
+1803!Martti Hamina
+1800!Björn Löfström
+1796!Nicholas Bychkov Zwahlen
+1794!Jonas Sandberg
+1793!Rohan Gore
+1787!Kjell Jernselius
+1783!Radu Cernea
+1778!Mukhtar Jamshedi
+1768!Neo Malmquist
+1763!Joacim Hultin
+1761!Lars-Åke Pettersson
+1748!André J Lindebaum
+1733!Lars Eriksson
+1733!Hugo Hardwick
+1728!Hugo Sundell
+1726!Simon Johansson
+1721!Jouni Kaunonen
+1709!Eddie Parteg
+1695!Sid Van Den Brink
+1691!Svante Nödtveidt
+1688!Anders Hillbur
+1680!Sayak Raj Bardhan
+1671!Salar Banavi
+1650!Patrik Wiss
+1641!Anton Nordenfur
+1624!Jens Ahlström
+1622!Hanns Ivar Uniyal
+1579!Christer Carmegren
+1575!Christer Nilsson
+1524!Måns Nödtveidt
+1480!Karl-Oskar Rehnberg
+1417!David Broman
+1406!Vida Radon
+2416!Hampus Sörensen
+2413!Michael Wiedenkeller
+2366!Joar Ölund
+2335!Joar Östlund
+2272!Vidar Grahn
+2235!Leo Crevatin
+2213!Daniel Vesterbaek Pedersen
+2141!Victor Muntean
+2113!Filip Björkman
+2109!Vidar Seiger
+2108!Pratyush Tripathi
+2093!Erik Dingertz
+2076!Michael Duke
+2065!Matija Sakic
+2048!Michael Mattsson
+2046!Lukas Willstedt
+2039!Lavinia Valcu
+2035!Oliver Nilsson
+2031!Lennart Evertsson
+2022!Jussi Jakenberg
+2001!Aryan Banerjee
+1985!Tim Nordenfur
+1977!Elias Kingsley
+1954!Per Isaksson
+1944!Cristine Rose Mariano
+1936!Lo Ljungros
+1923!Herman Enholm
+1907!Carina Wickström
+1897!Joel Åhfeldt
+1896!Stefan Nyberg
+1893!Hans Rånby
+1889!Mikael Blom
+1886!Joar Berglund
+1885!Mikael Helin
+1880!Olle Ålgars
+1878!Jesper Borin
+1871!Khaschuluu Sergelenbaatar
+1852!Roy Karlsson
+1848!Fredrik Möllerström
+1846!Kenneth Fahlberg
+1835!Peder Gedda
+1833!Karam Masoudi
+1828!Christer Johansson
+1827!Anders Kallin
+1818!Morris Bergqvist
+1803!Martti Hamina
+1800!Björn Löfström
+1796!Nicholas Bychkov Zwahlen
+1794!Jonas Sandberg
+1793!Rohan Gore
+1787!Kjell Jernselius
+1783!Radu Cernea
+1778!Mukhtar Jamshedi
+1768!Neo Malmquist
+1763!Joacim Hultin
+1761!Lars-Åke Pettersson
+1748!André J Lindebaum
+1733!Lars Eriksson
+1733!Hugo Hardwick
+1728!Hugo Sundell
+1726!Simon Johansson
+1721!Jouni Kaunonen
+1709!Eddie Parteg
+1695!Sid Van Den Brink
+1691!Svante Nödtveidt
+1688!Anders Hillbur
+1680!Sayak Raj Bardhan
+1671!Salar Banavi
+1650!Patrik Wiss
+1641!Anton Nordenfur
+1624!Jens Ahlström
+1622!Hanns Ivar Uniyal
+1579!Christer Carmegren
+1575!Christer Nilsson
+1524!Måns Nödtveidt
+1480!Karl-Oskar Rehnberg
+1417!David Broman
+1406!Vida Radon
