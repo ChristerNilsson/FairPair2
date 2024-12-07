@@ -14,6 +14,8 @@ th    = (s,attrs="") -> "<th #{attrs}>#{s}</th>"
 input = (s,attrs="") -> "<input #{attrs}>#{s}</input>"
 bold  = (s)          -> "<b>#{s}</b>"
 
+boldify = (s) -> if 'b' in s then bold s else s
+
 seed = 0
 random = -> (((Math.sin(seed++)/2+0.5)*10000)%100)/100
 
@@ -22,10 +24,8 @@ sum = (s) ->
 	for item in s
 		res += parseFloat item
 	res
-# assert 6, g.sum '012012'
 
 sumNumbers = (arr) ->
-	# print 'sumNumbers',arr
 	res = 0
 	for item in arr
 		res += item
@@ -44,12 +44,6 @@ class Player
 		# Dubbelrond: ["22","01"] => 2.5 pp
 
 	balans : -> sum @col
-		# result = 0
-		# for ch in @col
-		# 	result += ch
-		# 	# if ch==1 then result += 1
-		# echo 'balans',@col,result
-		# result
 
 	score : ->
 		summa = 0
@@ -102,12 +96,12 @@ class Player
 matrix = (i) ->
 	res = Array(playersByELO.length).fill('•') 
 	res[i] = '*'
-	if i==0 then res[0]='H'
-	if i==playersByELO.length-1 then res[i]='L'
+	if i == 0 then res[0]='H'
+	if i == playersByELO.length-1 then res[i]='L'
 	pi = playersByELO[i]
 	for r in range pi.opp.length
-		res[pi.opp[r]]=(r+1) % 10
-	res.join ""
+		res[pi.opp[r]] = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r] # (r+1) % 10
+	res.join " "
 
 add = (elo,name) -> 
 	opp = []
@@ -125,7 +119,7 @@ class Tournament
 		@average = @calc_average()
 		echo 'average',@average
 
-	ok : (a,b) -> a.id != b.id and a.id not in b.opp and Math.abs(a.balans() + b.balans()) <= 2 #2
+	ok : (a,b) -> a.id != b.id and a.id not in b.opp and Math.abs(a.balans() + b.balans()) <= 2
 
 	calc_average : ->
 		res = 0
@@ -144,9 +138,11 @@ class Tournament
 				if not pb.active or b == iBye then continue
 				diff = Math.abs pa.elo - pb.elo
 				cost = 9999 - diff ** 1.01
+				#cost = 999999 - diff ** 2
 				if a < b then continue
 				if @ok pa,pb then arr.push [a,b, cost]
 		arr.sort (a,b) -> b[2] - a[2] # cost
+		echo arr
 		arr
 
 	findSolution : (edges) -> 
@@ -170,23 +166,25 @@ class Tournament
 			s += td p.id+1,center
 			for r in range R
 				game = p.result r
+				txt = game.replace('w','•').replace('b','•')
+
 				if r == R-1
-					if PPR == 2 then s += td game + input("",'type="text" maxlength="2" style="width:16px" oninput="moveToNext(this)"'),right
-					if PPR == 1 then s += td game + input("",'type="text" maxlength="1" style="width:8px" oninput="moveToNext(this)"'),right
+					if PPR == 2 then txt += input("",'type="text" maxlength="2" style="width:16px" oninput="moveToNext(this)"') #,right
+					if PPR == 1 then txt += input("",'type="text" maxlength="1" style="width:8px" oninput="moveToNext(this)"') #,right
+
+				if 'b' in game
+					s += td bold(txt),right
 				else
-					txt = game.replace('w','•').replace('b','•')
-					if 'b' in game
-						s += td bold(txt),right
-					else
-						s += td txt,right
+					s += td txt,right
+				# else
 				
 			# s += td p.score(),right
-			s += td p.enhanced_performance().toFixed(1),right
 			# s += td p.performance().toFixed(1),right
+			s += td p.enhanced_performance().toFixed(1),right
 
 			s += td p.elo
 			s += td p.name
-			s += td p.table,center
+			s += td boldify(p.table.toString() + p.prettyCol(R-1)),center
 			# s += td matrix i
 			t += tr s
 
@@ -199,58 +197,67 @@ class Tournament
 		h += th "elo"
 		h += th "namn"
 		h += th "bd"
-		# h += th "12345678901234" # matris
+		# h += th "1 2 3 4 5 6 7 8 9 0 1 2 3 4" # matris
 
 		t = tr(h) + t
 		table t,'style="border:1px solid black"'
+
+	handleCol : (pi,pa) ->
+		if pi.col.length == 0
+			pi.col.push -1
+			pa.col.push 1
+		else
+			if pi.balans() > pa.balans()
+				pi.col.push -1
+				pa.col.push 1
+			else if pi.balans() < pa.balans()
+				pi.col.push 1
+				pa.col.push -1
+			else # samma balans
+				foundDiff = false
+				for j in range pi.col.length-1,-1,-1
+					if pi.col[j] != pa.col[j]
+						foundDiff = true
+						pi.col.push -pi.col[j]
+						pa.col.push -pa.col[j]
+						break
+				if not foundDiff
+					pi.col.push -1
+					pa.col.push 1
+
+	handleRes : (pi,pa) ->
+		si = ""
+		sa = ""
+		for ppr in range PPR
+			z = random()
+			if z < 0.4
+				si += "2"
+				sa += "0"
+			else if z > 0.6
+				si += "0"
+				sa += "2"
+			else 
+				si += "1"
+				sa += "1"
+		pi.res.push si
+		pa.res.push sa
 
 	makeOppColRes : (pairs,flag) ->
 		bord = 0
 		for i in range pairs.length
 			a = pairs[i]
 			if i < a
-				bord += 1
 				pi = @playersByScore[i]
 				pa = @playersByScore[a]
-				pi.opp.push a
-				pa.opp.push i
+				bord += 1
 				pi.table = bord
 				pa.table = bord
 
-				if pi.col.length == 0
-					pi.col.push -1
-					pa.col.push 1
-					echo 'empty',pi.col,pa.col
-				else
-					foundDiff = false
-					for j in range pi.col.length-1,-1,-1
-						if pi.col[j] != pa.col[j]
-							foundDiff = true
-							pi.col.push -pi.col[j]
-							pa.col.push -pa.col[j]
-							echo 'found diff',pi.col,pa.col
-							break
-					if not foundDiff
-						pi.col.push -1
-						pa.col.push 1
-						echo 'hittade inget',pi.col,pa.col
+				pi.opp.push a
+				pa.opp.push i
 
-				if flag
-					si = ""
-					sa = ""
-					for ppr in range PPR
-						z = random()
-						if z < 0.4
-							si += "2"
-							sa += "0"
-						else if z > 0.6
-							si += "0"
-							sa += "2"
-						else 
-							si += "1"
-							sa += "1"
-					pi.res.push si
-					pa.res.push sa
+				@handleCol pi,pa
+				if flag then @handleRes pi,pa
 			
 add 1598,"AIKIO Onni"
 add 1539,"ANDERSSON Lars Owe"
@@ -277,7 +284,7 @@ echo playersByELO
 
 tournament = new Tournament playersByELO
 
-antal = 14
+antal = 13
 for i in range antal
 	solution = tournament.findSolution tournament.makeEdges -1
 	echo solution
