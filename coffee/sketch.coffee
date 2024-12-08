@@ -12,10 +12,10 @@ table = (s,attrs="") -> "<table #{attrs}>\n#{s}</table>"
 tr    = (s,attrs="") -> "<tr #{attrs}>#{s}</tr>\n"
 td    = (s,attrs="") -> "<td #{attrs}>#{s}</td>"
 th    = (s,attrs="") -> "<th #{attrs}>#{s}</th>"
-input = (s,attrs="") -> "<input #{attrs}>#{s}</input>"
+# input = (s,attrs="") -> "<input #{attrs}>#{s}</input>"
 bold  = (s)          -> "<b>#{s}</b>"
 
-boldify = (s) -> if 'b' in s then bold s else s
+# boldify = (s) -> if 'b' in s then bold s else s
 
 seed = 0
 random = -> (((Math.sin(seed++)/2+0.5)*10000)%100)/100
@@ -100,7 +100,7 @@ matrix = (i) ->
 	if i == playersByELO.length-1 then res[i]='L'
 	pi = playersByELO[i]
 	for r in range pi.opp.length
-		res[pi.opp[r]] = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r] # (r+1) % 10
+		res[pi.opp[r]] = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r]
 	res.join " "
 
 add = (elo,name) -> 
