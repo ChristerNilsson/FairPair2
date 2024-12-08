@@ -11,19 +11,51 @@
 			html,
 			body {
 				font-family: 'Courier New', Courier, monospace;
+				font-size: 20px;
 				overflow-x: hidden;
 				overflow-y: auto;
 			}
 			input {
 				font-family: 'Courier New', Courier, monospace;
 			}
-			td,th {
+			th {
 				border: 1px solid black;
-				padding: 3px
 			}
 			table {
 				border-collapse: collapse;
+				margin: 5px auto;
 			}
+			td {
+				padding: 2px;
+				border: 1px solid black;
+				width:  28px;
+				height: 28px;
+				position: relative;
+				text-align: center;
+
+				white-space: nowrap; 
+    			overflow: hidden;    
+    			text-overflow: ellipsis; 
+			}
+			.black {
+				font-size: 12px;
+				position: absolute;
+				top: 1px;
+				left: 2px;
+			}
+			.white {
+				font-size: 12px;
+				position: absolute;
+				top: 1px;
+				right: 2px;
+			}
+			.center {
+				position: absolute;
+				bottom: -2px; 
+				left: 50%;
+				transform: translateX(-50%); 
+			}
+
 		</style>
 	</head>
 	<body>

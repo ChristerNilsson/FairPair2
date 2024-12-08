@@ -7,6 +7,7 @@ PPR = 1 # Partier Per Rond och spelare
 BYE = -1
 PAUSE = -2
 
+span  = (s,attrs="") -> "<span #{attrs}>#{s}</span>"
 table = (s,attrs="") -> "<table #{attrs}>\n#{s}</table>"
 tr    = (s,attrs="") -> "<tr #{attrs}>#{s}</tr>\n"
 td    = (s,attrs="") -> "<td #{attrs}>#{s}</td>"
@@ -85,13 +86,12 @@ class Player
 		@performance_rating ratings,total
 
 	prettyRes : (r) -> ("0½1"[ch] for ch in @res[r]).join "" # "12" => "½1"
-	prettyCol : (r) -> if @col[r]==1 then "b" else "w"  # "12" => "½1"
+	prettyCol : (r) -> if @col[r]==1 then "black" else "white"  # "12" => "½1"
 
 	result: (r) ->
-		if @res[r]
-			"#{@opp[r]+1}#{@prettyCol r}#{@prettyRes r}"
-		else
-			"#{@opp[r]+1}#{@prettyCol r}"
+		s = span @opp[r]+1, "class='#{@prettyCol r}'" 
+		t = if @res[r] then span @prettyRes(r), "class='center'" else ""
+		td s + t
 
 matrix = (i) ->
 	res = Array(playersByELO.length).fill('•') 
@@ -125,7 +125,7 @@ class Tournament
 		res = 0
 		for p in @playersByScore
 			res += p.elo
-		Math.round(res / @playersByScore.length)
+		res / @playersByScore.length
 
 	makeEdges : (iBye) -> # iBye är ett id eller -1
 		arr = []
@@ -138,11 +138,10 @@ class Tournament
 				if not pb.active or b == iBye then continue
 				diff = Math.abs pa.elo - pb.elo
 				cost = 9999 - diff ** 1.01
-				#cost = 999999 - diff ** 2
 				if a < b then continue
 				if @ok pa,pb then arr.push [a,b, cost]
 		arr.sort (a,b) -> b[2] - a[2] # cost
-		echo arr
+		# echo arr
 		arr
 
 	findSolution : (edges) -> 
@@ -157,44 +156,38 @@ class Tournament
 		R = @playersByScore[0].opp.length
 		t = ""
 
-		right = 'style="text-align:right"'
+		left   = 'style="text-align:left"'
+		right  = 'style="text-align:right"'
 		center = 'style="text-align:center"'
 		for i in range @playersByScore.length
 			p = @playersByScore[i]
 			s = ""
 			s += td i+1,center
-			s += td p.id+1,center
 			for r in range R
-				game = p.result r
-				txt = game.replace('w','•').replace('b','•')
-
-				if r == R-1
-					if PPR == 2 then txt += input("",'type="text" maxlength="2" style="width:16px" oninput="moveToNext(this)"') #,right
-					if PPR == 1 then txt += input("",'type="text" maxlength="1" style="width:8px" oninput="moveToNext(this)"') #,right
-
-				if 'b' in game
-					s += td bold(txt),right
-				else
-					s += td txt,right
-				# else
+				s += p.result r
 				
 			# s += td p.score(),right
 			# s += td p.performance().toFixed(1),right
 			s += td p.enhanced_performance().toFixed(1),right
+			# s += td p.performance().toFixed(1),right
 
 			s += td p.elo
-			s += td p.name
-			s += td boldify(p.table.toString() + p.prettyCol(R-1)),center
+			s += td p.id+1,center
+			s += td p.name,left
+
+			s += td p.table + p.prettyCol(R-1)[0],center
+
 			# s += td matrix i
 			t += tr s
 
 		h = ""
 		h += th "pos"
-		h += th "#"
 		for i in range R
 			h += th i+1
 		h += th "EPR"
+		# h += th "PR"
 		h += th "elo"
+		h += th "#"
 		h += th "namn"
 		h += th "bd"
 		# h += th "1 2 3 4 5 6 7 8 9 0 1 2 3 4" # matris
@@ -244,20 +237,22 @@ class Tournament
 
 	makeOppColRes : (pairs,flag) ->
 		bord = 0
-		for i in range pairs.length
-			a = pairs[i]
-			if i < a
-				pi = @playersByScore[i]
-				pa = @playersByScore[a]
-				bord += 1
-				pi.table = bord
-				pa.table = bord
+		for pair in pairs
+			a = pair[0]
+			b = pair[1]
 
-				pi.opp.push a
-				pa.opp.push i
+			pa = @playersByScore[a]
+			pb = @playersByScore[b]
 
-				@handleCol pi,pa
-				if flag then @handleRes pi,pa
+			bord += 1
+			pa.table = bord
+			pb.table = bord
+
+			pa.opp.push b
+			pb.opp.push a
+
+			@handleCol pa,pb
+			if flag then @handleRes pa,pb
 			
 add 1598,"AIKIO Onni"
 add 1539,"ANDERSSON Lars Owe"
@@ -284,15 +279,32 @@ echo playersByELO
 
 tournament = new Tournament playersByELO
 
+makePairs = (solution) ->
+	res = []
+	for j in range solution.length
+		if j < solution[j] then res.push [j,solution[j]]
+	res
+
 antal = 13
 for i in range antal
 	solution = tournament.findSolution tournament.makeEdges -1
 	echo solution
-	tournament.makeOppColRes solution,i < antal-1
+	arr = makePairs solution
+	# sortera på summan av elo-talen för paren.
+	arr.sort (a,b)-> 
+		a0 = playersByELO[a[0]].elo
+		a1 = playersByELO[a[1]].elo
+		b0 = playersByELO[b[0]].elo
+		b1 = playersByELO[b[1]].elo
+		b0 + b1 - a0 - a1
+	echo 'arr',arr
+	echo (playersByELO[a].elo + playersByELO[b].elo for [a,b] in arr)
+
+	tournament.makeOppColRes arr, i < antal-1
 
 tournament.sort()
 
 app = document.getElementById 'app'
 app.innerHTML = tournament.show()
 
-# echo app.innerHTML
+echo app.innerHTML
