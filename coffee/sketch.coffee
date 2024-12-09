@@ -2,8 +2,11 @@
 
 import { Edmonds } from './blossom.js' 
 
-PPR = 1 # enkelrond
-#PPR = 2 # dubbelrond
+range = _.range
+echo = console.log
+
+# PPR = 1 # enkelrond
+PPR = 2 # dubbelrond
 
 BYE = -1
 PAUSE = -2
@@ -33,41 +36,94 @@ sumNumbers = (arr) ->
 
 playersByELO = []
 
-moveFocus = (currentElement,delta=1) ->
+moveFocus = (currentElement,next) ->
 	focusable = document.querySelectorAll('[tabindex]')
 	focusableArray = Array.from(focusable)
-	currentIndex = focusableArray.indexOf(currentElement)
-	newIndex = (currentIndex + delta) %% focusableArray.length
+	# currentIndex = focusableArray.indexOf(currentElement)
+	newIndex = next %% focusableArray.length
 	focusableArray[newIndex].focus()
 
-export handleKeyDown = (event) ->
+# export handleKeyDown = (event) -> # Enkelrond
+# 	if event == undefined then return
+# 	index = event.target.tabIndex - 1
+# 	p = tournament.playersByScore[index]
+# 	echo 'c o f f e e', event.key
+# 	r = p.opp.length-1
+# 	if event.key == '0'
+# 		p.res[r] = "0"
+# 		event.target.innerHTML = p.result r,index-1
+# 		moveFocus event.target
+# 	if event.key == 'r' or event.key == ' '
+# 		p.res[r] = "1"
+# 		event.target.innerHTML = p.result r,index-1
+# 		moveFocus event.target
+# 	if event.key == '1'
+# 		p.res[r] = "2"
+# 		event.target.innerHTML = p.result r,index-1
+# 		moveFocus event.target
+# 	if event.key == 'Delete'
+# 		p.res[r] = ""
+# 		event.target.innerHTML = p.result r,index-1
+# 		moveFocus event.target
+# 	if event.key == 'ArrowDown' then moveFocus event.target
+# 	if event.key == 'ArrowUp'   then moveFocus event.target, -1
+
+inverse = (s) -> 
+	res = ""
+	for ch in s
+		res += "210"[parseInt ch]
+	res
+console.assert "22" == inverse "00"
+console.assert "11" == inverse "11"
+console.assert "00" == inverse "22"
+
+check = (p,q) ->
+	r = p.opp.length-1
+	if p.res[r] == undefined then p.res[r] = "" 
+	if q.res[r] == undefined then q.res[r] = "" 
+	echo p.res[r].length, q.res[r].length, p.res[r], q.res[r], inverse p.res[r]
+#	p.error = p.res[r].length == 2 and q.res[r].length == 2 and p.res[r] != inverse q.res[r]
+	p.error = p.res[r] != inverse q.res[r]
+	if p.error then echo "error",p.name,q.name
+
+export handleKeyDown = (event) -> # Dubbelrond
 	if event == undefined then return
 	index = event.target.tabIndex - 1
 	p = tournament.playersByScore[index]
-	echo 'c o f f e e', event.key
 	r = p.opp.length-1
-	if event.key == '0'
-		p.res[r] = "0"
-		event.target.innerHTML = p.result r,index-1
-		moveFocus event.target
-	if event.key == 'r' or event.key == ' '
-		p.res[r] = "1"
-		event.target.innerHTML = p.result r,index-1
-		moveFocus event.target
-	if event.key == '1'
-		p.res[r] = "2"
-		event.target.innerHTML = p.result r,index-1
-		moveFocus event.target
+	q = playersByELO[p.opp[r]]
+	echo 'c o f f e e', event.key,p.name,q.name
+
+	trans = {"0":"0", 'r':"1", "1": "2", " ": "1"}
+
 	if event.key == 'Delete'
 		p.res[r] = ""
 		event.target.innerHTML = p.result r,index-1
-		moveFocus event.target
-	if event.key == 'ArrowDown' then moveFocus event.target
-	if event.key == 'ArrowUp'   then moveFocus event.target, -1
+		moveFocus event.target, index + 1
+	if event.key == 'ArrowDown' then moveFocus event.target, index+1
+	if event.key == 'ArrowUp'   then moveFocus event.target, index-1
+	if event.key == 'Home'      then moveFocus event.target, 0
+	if event.key == 'End'       then moveFocus event.target, playersByELO.length - 1
+
+	if p.res[r] == undefined then p.res[r] = ""
+
+	if event.key in "0r 1"
+		if p.res[r].length == 1
+			p.res[r] += trans[event.key]
+			check p, q
+			event.target.innerHTML = p.result r,index-1
+			echo '1',p.result r,index-1
+			moveFocus event.target, index + 1
+		else # 0 or 2
+			p.res[r] = trans[event.key]
+			check p, q
+			event.target.innerHTML = p.result r,index-1
+			echo '02',p.result r,index-1
 
 class Player
 	constructor : (@elo,@name,@opp,@col,@res) ->
 		@active = true
+		@error = false
 		# @opp är en lista med heltal
 		# @col är en lista med -1 och 1
 		# @res håller ihop partierna i en sträng per rond och spelare
@@ -116,17 +172,30 @@ class Player
 			ratings.push playersByELO[@opp[r]].elo
 		@performance_rating ratings,total
 
-	prettyRes : (r) -> ("0½1"[ch] for ch in @res[r]).join "" # "12" => "½1"
-	prettyCol : (r) -> if @col[r]==1 then "black" else "white"  # "12" => "½1"
+	prettyRes : (r) -> 
+		if @res[r] is undefined then return ""
+		("0½1"[ch] for ch in @res[r]).join "" # "12" => "½1"
+
+	prettyCol : (r) -> if @col[r]==1 then "black" else "white"  # 1 => "black"
+	prettyCol2: (r) -> if @col[r]==1 then "white" else "black"  # 1 => "white"
 
 	result: (r,index) ->
 		s = span @opp[r]+1, "class=" + @prettyCol r
-		if @res[r] # senaste ronden
+		# if @res[r] and @res[r] != ""
+		if r < @opp.length-1
+			echo 'tidigare ronder'
 			t = span @prettyRes(r), "class='center'"
+			echo 'bertil',td s + t
 			td s + t
-		else
-			t = span "", "class='center'"
-			td s + t, "class='current' tabindex='#{index+1}'"
+		else # senaste ronden
+			echo 'result sista ronden',@error
+			t = span @prettyRes(r), "class='center'"
+			if @error
+				attrs = "class='current' style='background-color: red'   tabindex='#{index+1}'"
+			else
+				attrs = "class='current' style='background-color: green' tabindex='#{index+1}'"
+			echo 'cesar', td s + t, attrs
+			td s + t, attrs
 
 matrix = (i) ->
 	res = Array(playersByELO.length).fill('•') 
@@ -143,9 +212,6 @@ add = (elo,name) ->
 	col = []
 	res = []
 	playersByELO.push new Player elo,name,opp,col,res
-
-range = _.range
-echo = console.log
 
 class Tournament
 	constructor : (players) ->
@@ -211,7 +277,7 @@ class Tournament
 			s += td p.id+1,ta_center
 			s += td p.name,ta_left
 
-			s += td p.table + p.prettyCol(R-1)[0],ta_center
+			s += td p.table + p.prettyCol(R-1)[0] + p.prettyCol2(R-1)[0],ta_center
 
 			# s += td matrix i
 			t += tr s
@@ -260,14 +326,14 @@ class Tournament
 		for ppr in range PPR
 			z = random()
 			if z < 0.4
-				si += "2"
-				sa += "0"
+				si += "2" # 2
+				sa += "0" # 0
 			else if z > 0.6
-				si += "0"
-				sa += "2"
+				si += "0" # 0 
+				sa += "2" # 2
 			else 
-				si += "1"
-				sa += "1"
+				si += "1" # 1
+				sa += "1" # 1
 		pi.res.push si
 		pa.res.push sa
 
@@ -324,7 +390,7 @@ makePairs = (solution) ->
 antal = 13
 for i in range antal
 	solution = tournament.findSolution tournament.makeEdges -1
-	echo solution
+	# echo solution
 	arr = makePairs solution
 	# sortera på summan av elo-talen för paren.
 	arr.sort (a,b)-> 
@@ -333,8 +399,8 @@ for i in range antal
 		b0 = playersByELO[b[0]].elo
 		b1 = playersByELO[b[1]].elo
 		b0 + b1 - a0 - a1
-	echo 'arr',arr
-	echo (playersByELO[a].elo + playersByELO[b].elo for [a,b] in arr)
+	# echo 'arr',arr
+	# echo (playersByELO[a].elo + playersByELO[b].elo for [a,b] in arr)
 
 	tournament.makeOppColRes arr, i < antal-1
 
@@ -345,7 +411,6 @@ app = document.getElementById 'app'
 app.innerHTML = tournament.makeHTML()
 
 for control in document.querySelectorAll '[tabindex]'
-	echo 'tabindex'
 	control.onkeydown = handleKeyDown
 
 echo app.innerHTML
