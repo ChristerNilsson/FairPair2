@@ -5,8 +5,8 @@ import { Edmonds } from './blossom.js'
 range = _.range
 echo = console.log
 
-# PPR = 1 # enkelrond
-PPR = 2 # dubbelrond
+PPR = 1 # enkelrond
+#PPR = 2 # dubbelrond
 
 BYE = -1
 PAUSE = -2
@@ -43,31 +43,6 @@ moveFocus = (currentElement,next) ->
 	newIndex = next %% focusableArray.length
 	focusableArray[newIndex].focus()
 
-# export handleKeyDown = (event) -> # Enkelrond
-# 	if event == undefined then return
-# 	index = event.target.tabIndex - 1
-# 	p = tournament.playersByScore[index]
-# 	echo 'c o f f e e', event.key
-# 	r = p.opp.length-1
-# 	if event.key == '0'
-# 		p.res[r] = "0"
-# 		event.target.innerHTML = p.result r,index-1
-# 		moveFocus event.target
-# 	if event.key == 'r' or event.key == ' '
-# 		p.res[r] = "1"
-# 		event.target.innerHTML = p.result r,index-1
-# 		moveFocus event.target
-# 	if event.key == '1'
-# 		p.res[r] = "2"
-# 		event.target.innerHTML = p.result r,index-1
-# 		moveFocus event.target
-# 	if event.key == 'Delete'
-# 		p.res[r] = ""
-# 		event.target.innerHTML = p.result r,index-1
-# 		moveFocus event.target
-# 	if event.key == 'ArrowDown' then moveFocus event.target
-# 	if event.key == 'ArrowUp'   then moveFocus event.target, -1
-
 inverse = (s) -> 
 	res = ""
 	for ch in s
@@ -86,15 +61,43 @@ check = (p,q) ->
 	p.error = p.res[r] != inverse q.res[r]
 	if p.error then echo "error",p.name,q.name
 
-export handleKeyDown = (event) -> # Dubbelrond
+export handleKeyDown = (event) ->
+	if PPR == 1 then handleKeyDown_1 event else handleKeyDown_2 event
+
+handleKeyDown_1 = (event) -> # Enkelrond
+	trans = {"0":"0", 'r':"1", "1": "2", " ": "1"}
+	if event == undefined then return
+	index = event.target.tabIndex - 1
+	p = tournament.playersByScore[index]
+	r = p.opp.length-1
+	q = playersByELO[p.opp[r]]
+
+	echo 'c o f f e e', event.key
+
+	if event.key == 'Delete'
+		p.res[r] = ""
+		event.target.innerHTML = p.result r,index-1
+		moveFocus event.target, index + 1
+	if event.key == 'ArrowDown' then moveFocus event.target, index+1
+	if event.key == 'ArrowUp'   then moveFocus event.target, index-1
+	if event.key == 'Home'      then moveFocus event.target, 0
+	if event.key == 'End'       then moveFocus event.target, playersByELO.length - 1
+
+	if event.key in "0r 1"
+		p.res[r] = trans[event.key]
+		check p, q
+		event.target.innerHTML = p.result r,index-1
+		echo p.result r,index-1
+		moveFocus event.target, index + 1
+
+handleKeyDown_2 = (event) -> # Dubbelrond
+	trans = {"0":"0", 'r':"1", "1": "2", " ": "1"}
 	if event == undefined then return
 	index = event.target.tabIndex - 1
 	p = tournament.playersByScore[index]
 	r = p.opp.length-1
 	q = playersByELO[p.opp[r]]
 	echo 'c o f f e e', event.key,p.name,q.name
-
-	trans = {"0":"0", 'r':"1", "1": "2", " ": "1"}
 
 	if event.key == 'Delete'
 		p.res[r] = ""
@@ -154,23 +157,31 @@ class Player
 				hi = rating
 		rating
 
+	magnusKarlsson : (ratings, total) -> # linjär extrapolation när spelaren har 0% eller 100%
+		d = if total == 0 then 0.5 else - 0.5 
+		a = @performance_rating ratings,total + d
+		b = @performance_rating ratings,total + 2 * d
+		2 * a - b
+
 	performance : ->
-		total = @score()
+		total = @score() / PPR
 		ratings = []
 		for r in range @res.length
 			# if @opp[r] == BYE then continue
 			# if @opp[r] == PAUSE then continue
 			ratings.push playersByELO[@opp[r]].elo
-		@performance_rating ratings,total
+		prel = @performance_rating ratings,total
+		if 1 < prel < 3999 then return prel
+		@magnusKarlsson ratings,total
 
-	enhanced_performance : ->
-		total = @score() / PPR + 0.5 # fiktiv remi
-		ratings = [tournament.average]
-		for r in range @res.length
-			# if @opp[r] == BYE then continue
-			# if @opp[r] == PAUSE then continue
-			ratings.push playersByELO[@opp[r]].elo
-		@performance_rating ratings,total
+	# enhanced_performance : ->
+	# 	total = @score() / PPR + 0.5 # fiktiv remi
+	# 	ratings = [tournament.average]
+	# 	for r in range @res.length
+	# 		# if @opp[r] == BYE then continue
+	# 		# if @opp[r] == PAUSE then continue
+	# 		ratings.push playersByELO[@opp[r]].elo
+	# 	@performance_rating ratings,total
 
 	prettyRes : (r) -> 
 		if @res[r] is undefined then return ""
@@ -217,16 +228,8 @@ class Tournament
 	constructor : (players) ->
 		@playersByScore = _.clone players
 		echo 'playersByScore', @playersByScore
-		@average = @calc_average()
-		echo 'average',@average
 
 	ok : (a,b) -> a.id != b.id and a.id not in b.opp and Math.abs(a.balans() + b.balans()) <= 2
-
-	calc_average : ->
-		res = 0
-		for p in @playersByScore
-			res += p.elo
-		res / @playersByScore.length
 
 	makeEdges : (iBye) -> # iBye är ett id eller -1
 		arr = []
@@ -242,16 +245,13 @@ class Tournament
 				if a < b then continue
 				if @ok pa,pb then arr.push [a,b, cost]
 		arr.sort (a,b) -> b[2] - a[2] # cost
-		# echo arr
 		arr
 
 	findSolution : (edges) -> 
 		edmonds = new Edmonds edges
 		edmonds.maxWeightMatching edges
 
-	# sort : -> @playersByScore.sort (a,b)-> b.score() - a.score()
-	# sort : -> @playersByScore.sort (a,b)-> b.performance() - a.performance()
-	sort : -> @playersByScore.sort (a,b)-> b.enhanced_performance() - a.enhanced_performance()
+	sort : -> @playersByScore.sort (a,b)-> b.performance() - a.performance()
 
 	makeHTML : ->
 		R = @playersByScore[0].opp.length
@@ -268,9 +268,7 @@ class Tournament
 			for r in range R
 				s += p.result r,i
 				
-			# s += td p.score(),ta_right
-			# s += td p.performance().toFixed(1),ta_right
-			s += td p.enhanced_performance().toFixed(1),ta_right
+			s += td p.performance().toFixed(1),ta_right
 			s += td p.score().toFixed(1),ta_right
 
 			s += td p.elo
@@ -286,7 +284,7 @@ class Tournament
 		h += th "pos"
 		for i in range R
 			h += th i+1
-		h += th "EPR"
+		h += th "PR"
 		h += th "pp"
 		h += th "elo"
 		h += th "#"
@@ -323,12 +321,13 @@ class Tournament
 	handleRes : (pi,pa) ->
 		si = ""
 		sa = ""
+		remi = 0.05
 		for ppr in range PPR
 			z = random()
-			if z < 0.4
+			if z < 0.5 - remi
 				si += "2" # 2
 				sa += "0" # 0
-			else if z > 0.6
+			else if z > 0.5 + remi 
 				si += "0" # 0 
 				sa += "2" # 2
 			else 
@@ -390,17 +389,14 @@ makePairs = (solution) ->
 antal = 13
 for i in range antal
 	solution = tournament.findSolution tournament.makeEdges -1
-	# echo solution
 	arr = makePairs solution
-	# sortera på summan av elo-talen för paren.
+	# paret med högst elo sitter på bord 1
 	arr.sort (a,b)-> 
 		a0 = playersByELO[a[0]].elo
 		a1 = playersByELO[a[1]].elo
 		b0 = playersByELO[b[0]].elo
 		b1 = playersByELO[b[1]].elo
 		b0 + b1 - a0 - a1
-	# echo 'arr',arr
-	# echo (playersByELO[a].elo + playersByELO[b].elo for [a,b] in arr)
 
 	tournament.makeOppColRes arr, i < antal-1
 
