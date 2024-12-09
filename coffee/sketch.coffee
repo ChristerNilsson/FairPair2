@@ -2,20 +2,19 @@
 
 import { Edmonds } from './blossom.js' 
 
-PPR = 1 # Partier Per Rond och spelare
+PPR = 1 # enkelrond
+#PPR = 2 # dubbelrond
 
 BYE = -1
 PAUSE = -2
+
+current = 1 # anger id
 
 span  = (s,attrs="") -> "<span #{attrs}>#{s}</span>"
 table = (s,attrs="") -> "<table #{attrs}>\n#{s}</table>"
 tr    = (s,attrs="") -> "<tr #{attrs}>#{s}</tr>\n"
 td    = (s,attrs="") -> "<td #{attrs}>#{s}</td>"
 th    = (s,attrs="") -> "<th #{attrs}>#{s}</th>"
-# input = (s,attrs="") -> "<input #{attrs}>#{s}</input>"
-bold  = (s)          -> "<b>#{s}</b>"
-
-# boldify = (s) -> if 'b' in s then bold s else s
 
 seed = 0
 random = -> (((Math.sin(seed++)/2+0.5)*10000)%100)/100
@@ -33,6 +32,38 @@ sumNumbers = (arr) ->
 	res
 
 playersByELO = []
+
+moveFocus = (currentElement,delta=1) ->
+	focusable = document.querySelectorAll('[tabindex]')
+	focusableArray = Array.from(focusable)
+	currentIndex = focusableArray.indexOf(currentElement)
+	newIndex = (currentIndex + delta) %% focusableArray.length
+	focusableArray[newIndex].focus()
+
+export handleKeyDown = (event) ->
+	if event == undefined then return
+	index = event.target.tabIndex - 1
+	p = tournament.playersByScore[index]
+	echo 'c o f f e e', event.key
+	r = p.opp.length-1
+	if event.key == '0'
+		p.res[r] = "0"
+		event.target.innerHTML = p.result r,index-1
+		moveFocus event.target
+	if event.key == 'r' or event.key == ' '
+		p.res[r] = "1"
+		event.target.innerHTML = p.result r,index-1
+		moveFocus event.target
+	if event.key == '1'
+		p.res[r] = "2"
+		event.target.innerHTML = p.result r,index-1
+		moveFocus event.target
+	if event.key == 'Delete'
+		p.res[r] = ""
+		event.target.innerHTML = p.result r,index-1
+		moveFocus event.target
+	if event.key == 'ArrowDown' then moveFocus event.target
+	if event.key == 'ArrowUp'   then moveFocus event.target, -1
 
 class Player
 	constructor : (@elo,@name,@opp,@col,@res) ->
@@ -77,7 +108,7 @@ class Player
 		@performance_rating ratings,total
 
 	enhanced_performance : ->
-		total = @score() + 0.5 # fiktiv remi
+		total = @score() / PPR + 0.5 # fiktiv remi
 		ratings = [tournament.average]
 		for r in range @res.length
 			# if @opp[r] == BYE then continue
@@ -88,10 +119,14 @@ class Player
 	prettyRes : (r) -> ("0½1"[ch] for ch in @res[r]).join "" # "12" => "½1"
 	prettyCol : (r) -> if @col[r]==1 then "black" else "white"  # "12" => "½1"
 
-	result: (r) ->
-		s = span @opp[r]+1, "class='#{@prettyCol r}'" 
-		t = if @res[r] then span @prettyRes(r), "class='center'" else ""
-		td s + t
+	result: (r,index) ->
+		s = span @opp[r]+1, "class=" + @prettyCol r
+		if @res[r] # senaste ronden
+			t = span @prettyRes(r), "class='center'"
+			td s + t
+		else
+			t = span "", "class='center'"
+			td s + t, "class='current' tabindex='#{index+1}'"
 
 matrix = (i) ->
 	res = Array(playersByELO.length).fill('•') 
@@ -152,30 +187,31 @@ class Tournament
 	# sort : -> @playersByScore.sort (a,b)-> b.performance() - a.performance()
 	sort : -> @playersByScore.sort (a,b)-> b.enhanced_performance() - a.enhanced_performance()
 
-	show : ->
+	makeHTML : ->
 		R = @playersByScore[0].opp.length
 		t = ""
 
-		left   = 'style="text-align:left"'
-		right  = 'style="text-align:right"'
-		center = 'style="text-align:center"'
+		ta_left   = "style='text-align:left'"
+		ta_right  = "style='text-align:right'"
+		ta_center = "style='text-align:center'"
 		for i in range @playersByScore.length
 			p = @playersByScore[i]
+			if i==0 then current = p.id
 			s = ""
-			s += td i+1,center
+			s += td i+1,ta_center
 			for r in range R
-				s += p.result r
+				s += p.result r,i
 				
-			# s += td p.score(),right
-			# s += td p.performance().toFixed(1),right
-			s += td p.enhanced_performance().toFixed(1),right
-			# s += td p.performance().toFixed(1),right
+			# s += td p.score(),ta_right
+			# s += td p.performance().toFixed(1),ta_right
+			s += td p.enhanced_performance().toFixed(1),ta_right
+			s += td p.score().toFixed(1),ta_right
 
 			s += td p.elo
-			s += td p.id+1,center
-			s += td p.name,left
+			s += td p.id+1,ta_center
+			s += td p.name,ta_left
 
-			s += td p.table + p.prettyCol(R-1)[0],center
+			s += td p.table + p.prettyCol(R-1)[0],ta_center
 
 			# s += td matrix i
 			t += tr s
@@ -185,7 +221,7 @@ class Tournament
 		for i in range R
 			h += th i+1
 		h += th "EPR"
-		# h += th "PR"
+		h += th "pp"
 		h += th "elo"
 		h += th "#"
 		h += th "namn"
@@ -305,6 +341,11 @@ for i in range antal
 tournament.sort()
 
 app = document.getElementById 'app'
-app.innerHTML = tournament.show()
+
+app.innerHTML = tournament.makeHTML()
+
+for control in document.querySelectorAll '[tabindex]'
+	echo 'tabindex'
+	control.onkeydown = handleKeyDown
 
 echo app.innerHTML

@@ -55,6 +55,9 @@
 				left: 50%;
 				transform: translateX(-50%); 
 			}
+			.current {
+				background-color: yellow;
+			}
 
 		</style>
 	</head>
@@ -68,7 +71,9 @@
 		/> -->
 
 		<script type="module" src="coffee/sketch.js"></script>
+
 		<div id="app"></div>
+
 		<!-- <script type="module">
 			import { handleFile } from './coffee/sketch.js';
 			window.handleFileChange = function(event) {
@@ -79,74 +84,84 @@
 		</script> -->
 
 		
-		<script>
-			function indicate (input,other) {
-				const a = input.value
-				const b = other.value
-				const na = a.length
-				const nb = b.length
+		<script type="module">
 
-				input.style.backgroundColor = 'white'
-				other.style.backgroundColor = 'white'
+			import { handleKeyDown } from './coffee/sketch.js'
 
-				const minimum = Math.min(na,nb)
-				const ok = ['01','10','½½']
-				input.style.backgroundColor = 'white'
-				other.style.backgroundColor = 'white'
-				for (i=0; i<minimum; i++) {
-					const both = a[i]+b[i]
-					console.log(both) 
-					if (!ok.includes(both)) {
-						input.style.backgroundColor = 'red'
-						other.style.backgroundColor = 'red'
-					}
-				}
-			}
+			handleKeyDown()
+			
+			// function indicate (input,other) {
+			// 	const a = input.value
+			// 	const b = other.value
+			// 	const na = a.length
+			// 	const nb = b.length
 
-			// const pairs = [1,0,3,2,5,4,7,6]
-			const pairs = [7,6,5,4,3,2,1,0]
-			function moveToNext(current) {
-				const s = current.value
-				const n = s.length				
+			// 	input.style.backgroundColor = 'white'
+			// 	other.style.backgroundColor = 'white'
 
-				const inputs = document.querySelectorAll("input");
-				var index = Array.from(inputs).indexOf(current)
-				var other = pairs[index]
+			// 	const minimum = Math.min(na,nb)
+			// 	const ok = ['01','10','½½']
+			// 	input.style.backgroundColor = 'white'
+			// 	other.style.backgroundColor = 'white'
+			// 	for (i=0; i<minimum; i++) {
+			// 		const both = a[i]+b[i]
+			// 		console.log(both) 
+			// 		if (!ok.includes(both)) {
+			// 			input.style.backgroundColor = 'red'
+			// 			other.style.backgroundColor = 'red'
+			// 		}
+			// 	}
+			// }
 
-				if (n==1) {
-					var first = s[n-1]
-					if ("01r ".indexOf(first) == -1) {
-						current.value = ""
-						return
-					}
-					if (first==' ') first='½'
-					if (first=='r') first='½'
-					current.value = first
-				} else if (n==2) {
-					first = s[0]
-					second = s[1]
-					if (second==' ') second='½'
-					if (second=='r') second='½'
-					current.value = first + second
-				}
-				indicate(inputs[index],inputs[other])
+			// // const pairs = [1,0,3,2,5,4,7,6]
+			// const pairs = [7,6,5,4,3,2,1,0]
+			// function moveToNext(current) {
+			// 	const s = current.value
+			// 	const n = s.length				
 
-				console.log(event)
+			// 	const inputs = document.querySelectorAll("input");
+			// 	var index = Array.from(inputs).indexOf(current)
+			// 	var other = pairs[index]
 
-				if (current.value.length === current.maxLength) {
-					index = (index+1) % inputs.length
-						const next = inputs[index]
-					if (next && next.tagName === "INPUT") {
-						next.focus();
-					}
-				} else if (event.inputType === "deleteContentBackward" && current.value.length == 0) {
-					index = (index-1) % inputs.length
-					const prev = inputs[index]
-					if (prev && prev.tagName === "INPUT") {
-						prev.focus();
-					}
-				}
-			}
+			// 	if (n==1) {
+			// 		var first = s[n-1]
+			// 		if ("01r ".indexOf(first) == -1) {
+			// 			current.value = ""
+			// 			return
+			// 		}
+			// 		if (first==' ') first='½'
+			// 		if (first=='r') first='½'
+			// 		current.value = first
+			// 	} else if (n==2) {
+			// 		first = s[0]
+			// 		second = s[1]
+			// 		if (second==' ') second='½'
+			// 		if (second=='r') second='½'
+			// 		current.value = first + second
+			// 	}
+			// 	indicate(inputs[index],inputs[other])
+
+			// 	console.log(event)
+
+			// 	if (current.value.length === current.maxLength) {
+			// 		index = (index+1) % inputs.length
+			// 			const next = inputs[index]
+			// 		if (next && next.tagName === "INPUT") {
+			// 			next.focus();
+			// 		}
+			// 	} else if (event.inputType === "deleteContentBackward" && current.value.length == 0) {
+			// 		index = (index-1) % inputs.length
+			// 		const prev = inputs[index]
+			// 		if (prev && prev.tagName === "INPUT") {
+			// 			prev.focus();
+			// 		}
+			// 	}
+			// }
+
+			// function handleKeyDown(index) {
+			// 	console.log('handleKeyDown',index)
+			// }
+
 		</script>
 
 	</body>
