@@ -1,8 +1,28 @@
-# FairPair
+# FairPair 2
+
+FairPair 2 is a major rewrite of FairPair 1
+
+* Only one page is used
+* Performance Rating with extrapolation (magnusKarlsson) for 0% and 100% is used
+* p5js replaced with html
+* handles one or two games per round
+
+## Commands
+
+* 1: Enter a win
+* 0: Enter a loss
+* r or space: Enter a draw
+* Up Arrow
+* Down Arrow
+* Home
+* End
+* Delete
+* Pair
+* ctrl-p prints
 
 ## Advantages with FairPair
 
-[Try it!](https://christernilsson.github.io/FairPair)
+[Try it!](https://christernilsson.github.io/FairPair2)
 
 * FairPair makes players of similar strength meet
 * To make players comparable, Enhanced Performance Rating is used

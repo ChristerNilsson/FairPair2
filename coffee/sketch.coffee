@@ -57,8 +57,10 @@ check = (p,q) ->
 	if p.res[r] == undefined then p.res[r] = "" 
 	if q.res[r] == undefined then q.res[r] = "" 
 	echo p.res[r].length, q.res[r].length, p.res[r], q.res[r], inverse p.res[r]
+
 #	p.error = p.res[r].length == 2 and q.res[r].length == 2 and p.res[r] != inverse q.res[r]
 	p.error = p.res[r] != inverse q.res[r]
+
 	if p.error then echo "error",p.name,q.name
 
 export handleKeyDown = (event) ->
@@ -123,6 +125,11 @@ handleKeyDown_2 = (event) -> # Dubbelrond
 			event.target.innerHTML = p.result r,index-1
 			echo '02',p.result r,index-1
 
+xs = (ratings, own_rating) -> sumNumbers(1 / (1 + 10**((rating - own_rating) / 400)) for rating in ratings)
+
+pr = (rs, s, lo=0, hi=4000, r=(lo+hi)/2) -> if hi - lo < 0.001 then r else if s > xs rs, r then pr rs, s, r, hi else pr rs, s, lo, r
+echo 'pr', pr [1900,2100], 1
+
 class Player
 	constructor : (@elo,@name,@opp,@col,@res) ->
 		@active = true
@@ -143,15 +150,12 @@ class Player
 				summa += parseInt ch
 		summa/2
 
-	expected_score : (ratings, own_rating) ->
-		sumNumbers(1 / (1 + 10**((rating - own_rating) / 400)) for rating in ratings)
-
 	performance_rating : (ratings, score) ->
 		lo = 0
 		hi = 4000
 		while hi - lo > 0.001
 			rating = (lo + hi) / 2
-			if score > @expected_score ratings, rating
+			if score > xs ratings, rating
 				lo = rating
 			else
 				hi = rating
@@ -173,15 +177,6 @@ class Player
 		prel = @performance_rating ratings,total
 		if 1 < prel < 3999 then return prel
 		@magnusKarlsson ratings,total
-
-	# enhanced_performance : ->
-	# 	total = @score() / PPR + 0.5 # fiktiv remi
-	# 	ratings = [tournament.average]
-	# 	for r in range @res.length
-	# 		# if @opp[r] == BYE then continue
-	# 		# if @opp[r] == PAUSE then continue
-	# 		ratings.push playersByELO[@opp[r]].elo
-	# 	@performance_rating ratings,total
 
 	prettyRes : (r) -> 
 		if @res[r] is undefined then return ""

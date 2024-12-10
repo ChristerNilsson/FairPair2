@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabell med Fokusfärg</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 200px;
+    }
+    td {
+      border: 1px solid black;
+      padding: 10px;
+      text-align: center;
+    }
+    td:focus {
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <table>
+    <tbody id="table-body"></tbody>
+  </table>
+
+  <script src="./coffee/lab.js"></script>
+</body>
+</html>
