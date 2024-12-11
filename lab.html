@@ -3,16 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tabell med Fokusfärg</title>
+  <title>Bord</title>
   <style>
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 20px;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    th {
+      border: 1px solid black;
+    }
     table {
       border-collapse: collapse;
-      width: 200px;
     }
     td {
       border: 1px solid black;
-      padding: 10px;
-      text-align: center;
+      padding: 5px;
+      /* text-align: center; */
     }
     td:focus {
       outline: none;
@@ -21,6 +29,7 @@
 </head>
 <body>
   <table>
+    <thead><th>Bord</th><th>Vit</th><th>½1 - ½0</th><th>Svart</th><th>Diff</th></thead>
     <tbody id="table-body"></tbody>
   </table>
 
