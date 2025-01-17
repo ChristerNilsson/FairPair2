@@ -5,6 +5,33 @@ currCell = null
 
 players = []
 
+###############
+
+wrap = (type,attrs,b...) ->
+	# b = b.join ""
+	elem = document.createElement type
+	# echo 'elem', typeof elem
+	for child in b
+		echo typeof child
+		if typeof child == 'object'
+			echo 'Node',child
+			elem.appendChild child
+		else
+			echo 'text',child
+			elem.textContent = child
+	for key in attrs
+		elem.setAttribute key,attrs[key]
+	elem
+	# "<#{type} #{JSON.stringify(attr)}>#{b}</#{type}>"
+
+table = (attr,b...) -> wrap 'table',attr,b...
+tr    = (attr,b...) -> wrap 'tr',attr,b...
+td    = (attr,b...) -> wrap 'td',attr, b...
+a     = (attr,b...) -> wrap 'a',attr, b...
+div   = (attr,b...) -> wrap 'div',attr,b...
+
+##############
+
 add = (elo,name) -> 
 	id = players.length
 	players.push {id, name, elo}
@@ -28,42 +55,87 @@ tables = [[1,0],[3,2],[5,4],[7,6],[9,8],[11,10],[13,12]]
 
 formatScore = -> if currCell then currCell.dataset.white.padEnd(2) + ' - ' + currCell.dataset.black.padStart(2) else "-"
 
-tableBody = document.getElementById "table-body"
+root = document.getElementById "table-body"
 
-for i in [0...tables.length]
-	[w,b] = tables[i]
-	row = document.createElement "tr"
+style = {textAlign:'center'}
+tabindex = 0
+width = "90px"
+dataset = {white:"",black:""}
 
-	nr = document.createElement "td"
-	nr.style.textAlign = "center"
-	nr.textContent = i+1
-	row.appendChild nr
+t = table {},
+	for i in [0...tables.length]
+		[w,b] = tables[i]
+		tr {},
+			td {style:{textAlign: "center"}}, i+1
+		# nr = document.createElement "td"
+		# nr.style.textAlign = "center"
+		# nr.textContent = i+1
+		# row.appendChild nr
+			td {dataset:{value:w}}, players[w].name
+		# white = document.createElement "td"
+		# white.textContent = players[w].name
+		# white.dataset.value = w
+		# row.appendChild white
+			td {style,tabindex,width,dataset}, formatScore()
+		# score = document.createElement "td"
+		# score.style.textAlign = "center"
+		# score.setAttribute "tabindex", "0"
+			# score.setAttribute "width", "90px"
+			# score.dataset.white = ""
+			# score.dataset.black = ""
+		# score.textContent = formatScore()
+		# row.appendChild score
 
-	white = document.createElement "td"
-	white.textContent = players[w].name
-	white.dataset.value = w
-	row.appendChild white
+			td {dataset:{value:b}}, players[b].name
+		# black = document.createElement "td"
+		# black.textContent = players[b].name
+		# black.dataset.value = b
+		# row.appendChild black
 
-	score = document.createElement "td"
-	score.style.textAlign = "center"
-	score.setAttribute "tabindex", "0"
-	score.setAttribute "width", "90px"
-	score.dataset.white = ""
-	score.dataset.black = ""
-	score.textContent = formatScore()
-	row.appendChild score
+			td {style:{textAlign:'right'}, dataset:{value:b}}, players[w].elo - players[b].elo
+		# diff = document.createElement "td"
+		# diff.style.textAlign = "right"
+		# diff.textContent = players[w].elo - players[b].elo
+		# row.appendChild diff
 
-	black = document.createElement "td"
-	black.textContent = players[b].name
-	black.dataset.value = b
-	row.appendChild black
+		# tableBody.appendChild row
+echo root.appendChild t
 
-	diff = document.createElement "td"
-	diff.style.textAlign = "right"
-	diff.textContent = players[w].elo - players[b].elo
-	row.appendChild diff
+# for i in [0...tables.length]
+# 	[w,b] = tables[i]
+# 	row = document.createElement "tr"
 
-	tableBody.appendChild row
+# 	nr = document.createElement "td"
+# 	nr.style.textAlign = "center"
+# 	nr.textContent = i+1
+# 	row.appendChild nr
+
+# 	white = document.createElement "td"
+# 	white.textContent = players[w].name
+# 	white.dataset.value = w
+# 	row.appendChild white
+
+# 	score = document.createElement "td"
+# 	score.style.textAlign = "center"
+# 	score.setAttribute "tabindex", "0"
+# 	score.setAttribute "width", "90px"
+# 	score.dataset.white = ""
+# 	score.dataset.black = ""
+# 	score.textContent = formatScore()
+# 	row.appendChild score
+
+# 	black = document.createElement "td"
+# 	black.textContent = players[b].name
+# 	black.dataset.value = b
+# 	row.appendChild black
+
+# 	diff = document.createElement "td"
+# 	diff.style.textAlign = "right"
+# 	diff.textContent = players[w].elo - players[b].elo
+# 	row.appendChild diff
+
+# 	tableBody.appendChild row
+
 
 cells = document.querySelectorAll "[tabindex]"
 
