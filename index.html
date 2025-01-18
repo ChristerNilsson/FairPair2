@@ -26,10 +26,10 @@
 				margin: 5px auto;
 			}
 			td {
-				padding: 2px;
+				padding: 0px;
 				border: 1px solid black;
 				width:  28px;
-				height: 28px;
+				height: 12px;
 				position: relative;
 				text-align: center;
 
@@ -37,24 +37,47 @@
     			overflow: hidden;    
     			text-overflow: ellipsis; 
 			}
-			.black {
-				font-size: 12px;
+
+			.xxxblack {
 				position: absolute;
+				font-size: 12px;
 				top: 1px;
 				left: 2px;
 			}
-			.white {
-				font-size: 12px;
+			.xxxwhite {
 				position: absolute;
+				font-size: 12px;
 				top: 1px;
 				right: 2px;
 			}
-			.center {
+
+			.ul {
 				position: absolute;
-				bottom: -2px; 
-				left: 50%;
+				font-size: 12px;
+				top: 0px;
+				left: 1px;
+			}
+			.ur {
+				position: absolute;
+				font-size: 12px;
+				top: 0px;
+				right: 1px;
+			}
+
+
+			.ll {
+				position: absolute;
+				bottom: -4px; 
+				left: 25%;
 				transform: translateX(-50%); 
 			}
+			.lr {
+				position: absolute;
+				bottom: -4px; 
+				left: 75%;
+				transform: translateX(-50%); 
+			}
+
 			.current {
 				background-color: yellow;
 			}

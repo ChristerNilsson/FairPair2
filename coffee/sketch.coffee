@@ -150,6 +150,9 @@ class Player
 				summa += parseInt ch
 		summa/2
 
+	prettyScore : ->
+		@score().toFixed(1).replace('.5','½').replace('.0','&nbsp;')
+
 	performance_rating : (ratings, score) ->
 		lo = 0
 		hi = 4000
@@ -182,20 +185,20 @@ class Player
 		if @res[r] is undefined then return ""
 		("0½1"[ch] for ch in @res[r]).join "" # "12" => "½1"
 
-	prettyCol : (r) -> if @col[r]==1 then "black" else "white"  # 1 => "black"
-	prettyCol2: (r) -> if @col[r]==1 then "white" else "black"  # 1 => "white"
+	prettyCol : (r) -> if @col[r]==1 then "ul" else "ur"  # 1 => "black"
+	prettyCol2: (r) -> if @col[r]==1 then "lr" else "ll"  # 1 => "white"
 
 	result: (r,index) ->
 		s = span @opp[r]+1, "class=" + @prettyCol r
 		# if @res[r] and @res[r] != ""
 		if r < @opp.length-1
 			echo 'tidigare ronder'
-			t = span @prettyRes(r), "class='center'"
+			t = span @prettyRes(r), "class=" + @prettyCol2 r
 			echo 'bertil',td s + t
 			td s + t
 		else # senaste ronden
 			echo 'result sista ronden',@error
-			t = span @prettyRes(r), "class='center'"
+			t = span @prettyRes(r), "class='lr'"
 			if @error
 				attrs = "class='current' style='background-color: red'   tabindex='#{index+1}'"
 			else
@@ -259,36 +262,49 @@ class Tournament
 			p = @playersByScore[i]
 			if i==0 then current = p.id
 			s = ""
-			s += td i+1,ta_center
+
+			s += td i+1,ta_right
+			s += td p.id+1,ta_right
+			s += td p.name,ta_left
+			s += td p.elo
+
 			for r in range R
 				s += p.result r,i
 				
-			s += td p.performance().toFixed(1),ta_right
-			s += td p.score().toFixed(1),ta_right
+			s += td p.performance().toFixed(0),ta_right
+			s += td p.prettyScore(),ta_right
 
-			s += td p.elo
-			s += td p.id+1,ta_center
-			s += td p.name,ta_left
+			# s += td p.table + p.prettyCol(R-1)[0] + p.prettyCol2(R-1)[0],ta_center
+			s += td p.table + {l:'B',r:'W'}[p.prettyCol(R-1)[1]], ta_center
+			s += td playersByELO[p.opp[R-1]].elo - p.elo, ta_right # diff
 
-			s += td p.table + p.prettyCol(R-1)[0] + p.prettyCol2(R-1)[0],ta_center
+			s += td "",'style="width:5px;border-top:none; border-bottom:none"'
+
+			q = playersByELO[i]
+			s += td "#{i+1}:#{q.table + {l:'B',r:'W'}[q.prettyCol(R-1)[1]]}" , ta_right
+
 
 			# s += td matrix i
 			t += tr s
 
 		h = ""
-		h += th "pos"
+		h += th "pos",'style="border:none"'
+		h += th "id",'style="border:none"'
+		h += th "namn",'style="border:none"'
+		h += th "elo",'style="border:none"'
 		for i in range R
-			h += th i+1
-		h += th "PR"
-		h += th "pp"
-		h += th "elo"
-		h += th "#"
-		h += th "namn"
-		h += th "bd"
+			h += th i+1,'style="border:none"'
+		h += th "pr",'style="border:none"'
+		h += th "pp",'style="border:none"'
+		h += th "bd",'style="border:none"'
+		h += th "diff",'style="border:none"'
+		h += th "",'style="border:none"'
+		h += th "id:bd",'style="border:none"'
 		# h += th "1 2 3 4 5 6 7 8 9 0 1 2 3 4" # matris
 
 		t = tr(h) + t
-		table t,'style="border:1px solid black"'
+		# table t,'style="border:1px solid black"'
+		table t,'style="border:none"'
 
 	handleCol : (pi,pa) ->
 		if pi.col.length == 0
