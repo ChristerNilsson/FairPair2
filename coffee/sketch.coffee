@@ -8,8 +8,6 @@ echo = console.log
 BYE = -1
 PAUSE = -2
 
-current = 1 # anger id
-
 span  = (s,attrs="") -> "<span #{attrs}>#{s}</span>"
 table = (s,attrs="") -> "<table #{attrs}>\n#{s}</table>"
 tr    = (s,attrs="") -> "<tr #{attrs}>#{s}</tr>\n"
@@ -34,11 +32,8 @@ sumNumbers = (arr) ->
 playersByELO = []
 
 moveFocus = (next) ->
-	current = next
 	focusable = document.querySelectorAll('[tabindex]')
 	focusableArray = Array.from(focusable)
-	# currentIndex = focusableArray.indexOf(currentElement)
-	# echo 'current',current,currentIndex
 	newIndex = next %% focusableArray.length
 	focusableArray[newIndex].focus()
 
@@ -167,22 +162,16 @@ class Player
 	result: (r,index) ->
 		s = span @opp[r]+1, "class=" + @prettyCol r
 		# if @res[r] and @res[r] != ""
-		if r < @opp.length-1
-			echo 'tidigare ronder'
-			t = span @prettyRes(r), "class=" + @prettyCol2 r
-			echo 'bertil',td s + t
-			td s + t
-		else # senaste ronden
-			echo 'result sista ronden',@error
-			t = span @prettyRes(r), "class='lr'"
-			#if index == current
-				# attrs = "style='background-color: yellow' tabindex='#{index+1}' class='current' "
-			#	attrs = "tabindex='#{index+1}' class='current' "
-			#else
-				# attrs = "style='background-color: white'  tabindex='#{index+1}'"
-			# attrs = "tabindex='#{index+1}'"
-			echo 'cesar', td s + t #, attrs
-			td s + t #, attrs
+#		if r < @opp.length-1
+			#echo 'tidigare ronder'
+#			t = span @prettyRes(r), "class=" + @prettyCol2 r
+			#echo 'bertil',td s + t
+#			td s + t
+#		else # senaste ronden
+#		echo 'result sista ronden',@error
+		t = span @prettyRes(r), "class=" + @prettyCol2 r
+		#echo 'cesar', td s + t
+		td s + t
 
 matrix = (i) ->
 	res = Array(playersByELO.length).fill('•') 
@@ -239,7 +228,7 @@ class Tournament
 		ta_center_strong = "style='text-align:center; font-weight: bold;'"
 		for i in range @playersByScore.length
 			p = @playersByScore[i]
-			if i==0 then current = p.id
+			#if i==0 then current = p.id
 			s = ""
 
 			s += td i+1,ta_right
