@@ -5,9 +5,6 @@ import { Edmonds } from './blossom.js'
 range = _.range
 echo = console.log
 
-PPR = 1 # enkelrond
-#PPR = 2 # dubbelrond
-
 BYE = -1
 PAUSE = -2
 
@@ -37,9 +34,11 @@ sumNumbers = (arr) ->
 playersByELO = []
 
 moveFocus = (currentElement,next) ->
+	current = next
 	focusable = document.querySelectorAll('[tabindex]')
 	focusableArray = Array.from(focusable)
-	# currentIndex = focusableArray.indexOf(currentElement)
+	currentIndex = focusableArray.indexOf(currentElement)
+	echo 'current',current,currentIndex
 	newIndex = next %% focusableArray.length
 	focusableArray[newIndex].focus()
 
@@ -63,68 +62,45 @@ check = (p,q) ->
 
 	if p.error then echo "error",p.name,q.name
 
-export handleKeyDown = (event) ->
-	if PPR == 1 then handleKeyDown_1 event else handleKeyDown_2 event
-
-handleKeyDown_1 = (event) -> # Enkelrond
-	trans = {"0":"0", 'r':"1", "1": "2", " ": "1"}
+export handleKeyDown = (event) -> # Enkelrond
+	trans = {"0":"0", ' ':"1", "1": "2"}
 	if event == undefined then return
-	index = event.target.tabIndex - 1
+	index = event.target.tabIndex # - 1
+	cell = event.target.children[16]
+	echo 'c o f f e e', event.key, cell #.target.tabIndex
 	p = tournament.playersByScore[index]
 	r = p.opp.length-1
 	q = playersByELO[p.opp[r]]
 
-	echo 'c o f f e e', event.key
-
 	if event.key == 'Delete'
 		p.res[r] = ""
-		event.target.innerHTML = p.result r,index-1
+		cell.innerHTML = p.result r,index-1
 		moveFocus event.target, index + 1
 	if event.key == 'ArrowDown' then moveFocus event.target, index+1
 	if event.key == 'ArrowUp'   then moveFocus event.target, index-1
 	if event.key == 'Home'      then moveFocus event.target, 0
 	if event.key == 'End'       then moveFocus event.target, playersByELO.length - 1
 
-	if event.key in "0r 1"
+	if event.key in "0 1"
 		p.res[r] = trans[event.key]
 		check p, q
-		event.target.innerHTML = p.result r,index-1
+		cell.innerHTML = p.result r,index-1
 		echo p.result r,index-1
 		moveFocus event.target, index + 1
 
-handleKeyDown_2 = (event) -> # Dubbelrond
-	trans = {"0":"0", 'r':"1", "1": "2", " ": "1"}
-	if event == undefined then return
-	index = event.target.tabIndex - 1
-	p = tournament.playersByScore[index]
-	r = p.opp.length-1
-	q = playersByELO[p.opp[r]]
-	echo 'c o f f e e', event.key,p.name,q.name
-
-	if event.key == 'Delete'
-		p.res[r] = ""
-		event.target.innerHTML = p.result r,index-1
-		moveFocus event.target, index + 1
-	if event.key == 'ArrowDown' then moveFocus event.target, index+1
-	if event.key == 'ArrowUp'   then moveFocus event.target, index-1
-	if event.key == 'Home'      then moveFocus event.target, 0
-	if event.key == 'End'       then moveFocus event.target, playersByELO.length - 1
-
-	if p.res[r] == undefined then p.res[r] = ""
-
-	if event.key in "0r 1"
-		if p.res[r].length == 1
-			p.res[r] += trans[event.key]
-			check p, q
-			event.target.innerHTML = p.result r,index-1
-			echo '1',p.result r,index-1
-			moveFocus event.target, index + 1
-		else # 0 or 2
-			p.res[r] = trans[event.key]
-			check p, q
-			event.target.innerHTML = p.result r,index-1
-			echo '02',p.result r,index-1
-
+	key = event.key.toUpperCase()
+	if key == event.key then dir = -1 else dir = 1
+	if key in "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ"
+		index = event.target.tabIndex # - 1
+		echo index
+		n = tournament.playersByScore.length
+		for i in range n
+			if dir==1 then ix=(index+i+1) % n else ix = (index-i-1) %% n
+			p = tournament.playersByScore[ix]
+			if p.name.startsWith key
+				moveFocus event.target, ix
+				break
+	
 xs = (ratings, own_rating) -> sumNumbers(1 / (1 + 10**((rating - own_rating) / 400)) for rating in ratings)
 
 pr = (rs, s, lo=0, hi=4000, r=(lo+hi)/2) -> if hi - lo < 0.001 then r else if s > xs rs, r then pr rs, s, r, hi else pr rs, s, lo, r
@@ -171,7 +147,7 @@ class Player
 		2 * a - b
 
 	performance : ->
-		total = @score() / PPR
+		total = @score()
 		ratings = []
 		for r in range @res.length
 			# if @opp[r] == BYE then continue
@@ -199,12 +175,14 @@ class Player
 		else # senaste ronden
 			echo 'result sista ronden',@error
 			t = span @prettyRes(r), "class='lr'"
-			if @error
-				attrs = "class='current' style='background-color: red'   tabindex='#{index+1}'"
-			else
-				attrs = "class='current' style='background-color: green' tabindex='#{index+1}'"
-			echo 'cesar', td s + t, attrs
-			td s + t, attrs
+			#if index == current
+				# attrs = "style='background-color: yellow' tabindex='#{index+1}' class='current' "
+			#	attrs = "tabindex='#{index+1}' class='current' "
+			#else
+				# attrs = "style='background-color: white'  tabindex='#{index+1}'"
+			# attrs = "tabindex='#{index+1}'"
+			echo 'cesar', td s + t #, attrs
+			td s + t #, attrs
 
 matrix = (i) ->
 	res = Array(playersByELO.length).fill('•') 
@@ -285,7 +263,7 @@ class Tournament
 
 
 			# s += td matrix i
-			t += tr s
+			t += tr s, "tabindex=#{i}"
 
 		h = ""
 		h += th "pos",'style="border:none"'
@@ -333,17 +311,17 @@ class Tournament
 		si = ""
 		sa = ""
 		remi = 0.05
-		for ppr in range PPR
-			z = random()
-			if z < 0.5 - remi
-				si += "2" # 2
-				sa += "0" # 0
-			else if z > 0.5 + remi 
-				si += "0" # 0 
-				sa += "2" # 2
-			else 
-				si += "1" # 1
-				sa += "1" # 1
+		# for ppr in range PPR
+		z = random()
+		if z < 0.5 - remi
+			si = "2" # 2
+			sa = "0" # 0
+		else if z > 0.5 + remi 
+			si = "0" # 0 
+			sa = "2" # 2
+		else 
+			si = "1" # 1
+			sa = "1" # 1
 		pi.res.push si
 		pa.res.push sa
 
@@ -419,5 +397,6 @@ app.innerHTML = tournament.makeHTML()
 
 for control in document.querySelectorAll '[tabindex]'
 	control.onkeydown = handleKeyDown
+	# control.onmousedown = handleMouseDown
 
 echo app.innerHTML
