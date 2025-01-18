@@ -33,12 +33,12 @@ sumNumbers = (arr) ->
 
 playersByELO = []
 
-moveFocus = (currentElement,next) ->
+moveFocus = (next) ->
 	current = next
 	focusable = document.querySelectorAll('[tabindex]')
 	focusableArray = Array.from(focusable)
-	currentIndex = focusableArray.indexOf(currentElement)
-	echo 'current',current,currentIndex
+	# currentIndex = focusableArray.indexOf(currentElement)
+	# echo 'current',current,currentIndex
 	newIndex = next %% focusableArray.length
 	focusableArray[newIndex].focus()
 
@@ -75,18 +75,18 @@ export handleKeyDown = (event) -> # Enkelrond
 	if event.key == 'Delete'
 		p.res[r] = ""
 		cell.innerHTML = p.result r,index-1
-		moveFocus event.target, index + 1
-	if event.key == 'ArrowDown' then moveFocus event.target, index+1
-	if event.key == 'ArrowUp'   then moveFocus event.target, index-1
-	if event.key == 'Home'      then moveFocus event.target, 0
-	if event.key == 'End'       then moveFocus event.target, playersByELO.length - 1
+		moveFocus index + 1
+	if event.key == 'ArrowDown' then moveFocus index+1
+	if event.key == 'ArrowUp'   then moveFocus index-1
+	if event.key == 'Home'      then moveFocus 0
+	if event.key == 'End'       then moveFocus playersByELO.length - 1
 
 	if event.key in "0 1"
 		p.res[r] = trans[event.key]
 		check p, q
 		cell.innerHTML = p.result r,index-1
 		echo p.result r,index-1
-		moveFocus event.target, index + 1
+		moveFocus index + 1
 
 	key = event.key.toUpperCase()
 	if key == event.key then dir = -1 else dir = 1
@@ -98,7 +98,7 @@ export handleKeyDown = (event) -> # Enkelrond
 			if dir==1 then ix=(index+i+1) % n else ix = (index-i-1) %% n
 			p = tournament.playersByScore[ix]
 			if p.name.startsWith key
-				moveFocus event.target, ix
+				moveFocus ix
 				break
 	
 xs = (ratings, own_rating) -> sumNumbers(1 / (1 + 10**((rating - own_rating) / 400)) for rating in ratings)
@@ -236,6 +236,7 @@ class Tournament
 		ta_left   = "style='text-align:left'"
 		ta_right  = "style='text-align:right'"
 		ta_center = "style='text-align:center'"
+		ta_center_strong = "style='text-align:center; font-weight: bold;'"
 		for i in range @playersByScore.length
 			p = @playersByScore[i]
 			if i==0 then current = p.id
@@ -253,7 +254,8 @@ class Tournament
 			s += td p.prettyScore(),ta_right
 
 			# s += td p.table + p.prettyCol(R-1)[0] + p.prettyCol2(R-1)[0],ta_center
-			s += td p.table + {l:'B',r:'W'}[p.prettyCol(R-1)[1]], ta_center
+			bd = p.table + {l:'B',r:'W'}[p.prettyCol(R-1)[1]]
+			s += td bd, ta_center_strong
 			s += td playersByELO[p.opp[R-1]].elo - p.elo, ta_right # diff
 
 			s += td "",'style="width:5px;border-top:none; border-bottom:none"'
@@ -399,4 +401,5 @@ for control in document.querySelectorAll '[tabindex]'
 	control.onkeydown = handleKeyDown
 	# control.onmousedown = handleMouseDown
 
+moveFocus 0
 echo app.innerHTML
