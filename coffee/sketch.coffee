@@ -5,6 +5,8 @@ import { Edmonds } from './blossom.js'
 range = _.range
 echo = console.log
 
+current = 0 
+
 BYE = -1
 PAUSE = -2
 
@@ -35,6 +37,7 @@ moveFocus = (next) ->
 	focusable = document.querySelectorAll('[tabindex]')
 	focusableArray = Array.from(focusable)
 	newIndex = next %% focusableArray.length
+	current = newIndex
 	focusableArray[newIndex].focus()
 
 inverse = (s) -> 
@@ -56,6 +59,9 @@ check = (p,q) ->
 	p.error = p.res[r] != inverse q.res[r]
 
 	if p.error then echo "error",p.name,q.name
+
+export onwheel = (event) =>
+	echo event
 
 export handleKeyDown = (event) -> # Enkelrond
 	trans = {"0":"0", ' ':"1", "1": "2"}
@@ -383,3 +389,19 @@ for control in document.querySelectorAll '[tabindex]'
 
 moveFocus 0
 echo app.innerHTML
+
+document.addEventListener 'DOMContentLoaded', ->
+	app = document.getElementById 'app'
+	app.onwheel = (event) ->
+		event.preventDefault()
+		n = playersByELO.length-1
+		if event.deltaY < 0 
+			if current > 0 then moveFocus current - 1
+		else 
+			if current < n then moveFocus current + 1
+		# console.log "Delta Y: #{event.deltaY}"
+		# console.log "Delta X: #{event.deltaX}"
+		# console.log "Delta Mode: #{event.deltaMode}"
+
+		# Anpassad rullning
+		# app.scrollTop += 1
