@@ -385,7 +385,6 @@ app.innerHTML = tournament.makeHTML()
 
 for control in document.querySelectorAll '[tabindex]'
 	control.onkeydown = handleKeyDown
-	# control.onmousedown = handleMouseDown
 
 moveFocus 0
 echo app.innerHTML
@@ -399,9 +398,3 @@ document.addEventListener 'DOMContentLoaded', ->
 			if current > 0 then moveFocus current - 1
 		else 
 			if current < n then moveFocus current + 1
-		# console.log "Delta Y: #{event.deltaY}"
-		# console.log "Delta X: #{event.deltaX}"
-		# console.log "Delta Mode: #{event.deltaMode}"
-
-		# Anpassad rullning
-		# app.scrollTop += 1
