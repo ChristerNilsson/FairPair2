@@ -19,6 +19,9 @@ th    = (s,attrs="") -> "<th #{attrs}>#{s}</th>"
 seed = 0
 random = -> (((Math.sin(seed++)/2+0.5)*10000)%100)/100
 
+app = document.getElementById 'app'
+info = document.getElementById 'info'
+
 sum = (s) ->
 	res = 0
 	for item in s
@@ -39,6 +42,7 @@ moveFocus = (next) ->
 	newIndex = next %% focusableArray.length
 	current = newIndex
 	focusableArray[newIndex].focus()
+	info.innerHTML = tournament.info()
 
 inverse = (s) -> 
 	res = ""
@@ -170,6 +174,15 @@ class Player
 		t = span @prettyRes(r), "class=" + @prettyCol2 r
 		td s + t
 
+	info : ->
+		res = []
+		for i in range @opp.length-1
+			res.push playersByELO[@opp[i]].elo.toString()
+		res.push @score().toFixed 1
+		res.push "=>"
+		res.push @performance().toFixed 3
+		res.join " "
+
 matrix = (i) ->
 	res = Array(playersByELO.length).fill('•') 
 	res[i] = '*'
@@ -215,6 +228,25 @@ class Tournament
 
 	sort : -> @playersByScore.sort (a,b)-> b.performance() - a.performance()
 
+	info : -> 
+		@playersByScore[current].info()
+
+	headers : (R) ->
+		h = ""
+		h += th "pos",'style="border:none"'
+		h += th "id",'style="border:none"'
+		h += th "namn",'style="border:none"'
+		h += th "elo",'style="border:none"'
+		for i in range R
+			h += th i+1,'style="border:none"'
+		h += th "pr",'style="border:none"'
+		h += th "pp",'style="border:none"'
+		h += th "bd",'style="border:none"'
+		h += th "diff",'style="border:none"'
+		h += th "",'style="border:none"'
+		h += th "id:bd",'style="border:none"'
+		h
+
 	makeHTML : ->
 		R = @playersByScore[0].opp.length
 		t = ""
@@ -253,23 +285,7 @@ class Tournament
 			# s += td matrix i
 			t += tr s, "tabindex=#{i}"
 
-		h = ""
-		h += th "pos",'style="border:none"'
-		h += th "id",'style="border:none"'
-		h += th "namn",'style="border:none"'
-		h += th "elo",'style="border:none"'
-		for i in range R
-			h += th i+1,'style="border:none"'
-		h += th "pr",'style="border:none"'
-		h += th "pp",'style="border:none"'
-		h += th "bd",'style="border:none"'
-		h += th "diff",'style="border:none"'
-		h += th "",'style="border:none"'
-		h += th "id:bd",'style="border:none"'
-		# h += th "1 2 3 4 5 6 7 8 9 0 1 2 3 4" # matris
-
-		t = tr(h) + t
-		# table t,'style="border:1px solid black"'
+		t = tr(@headers(R)) + t
 		table t,'style="border:none"'
 
 	handleCol : (pi,pa) ->
@@ -379,9 +395,8 @@ for i in range antal
 
 tournament.sort()
 
-app = document.getElementById 'app'
-
 app.innerHTML = tournament.makeHTML()
+info.innerHTML = tournament.info()
 
 for control in document.querySelectorAll '[tabindex]'
 	control.onkeydown = handleKeyDown
