@@ -1,64 +1,53 @@
-# How to use the program
+# Hur man använder FairPair 2
 
-## Pages
+## Kommandon
 
-The are four pages:
-* Standings (The final listing ordered by Elo change)
-* Tables    (shows where to sit and also used for entering results)
-* Names     (shows where to sit alphabetically)
-* Activity  (Pause and activate players)
+* Down Arrow: gå till **nästa** spelare
+* Up Arrow: gå till **föregående** spelare
+* Home: gå till första spelaren
+* End: gåtill sista spelaren
+* Bokstav: gå till **nästa** spelare vars namn börjar med bokstaven
+* Shift-Bokstav: gå till **föregående** spelare vars namn börjar med bokstaven
 
-Navigate between the pages by clicking with the mouse, using the letters **S**, **T**, **N**, **A** or **Left** and **Right** Arrow.
+* 1: Mata in en vinst
+* 0: Mata in en förlust
+* space: Mata in en remi
+* Delete: Tag bort ett resultat
 
-## Keys
+* Pair
+* ctrl-p skriver ut skärmen
 
-These scrolling keys are available:  
-**Up**, **Down**, **PageUp**, **PageDown**, **Home**, **End**   
-You can also use the mouseWheel to scroll.  
+* Du kan klicka på en rad för att markera en spelare 
+* Du kan även använda mushjulet
 
 ## Zoom
 
-* In and Out
+* ctrl + 
+* ctrl -
 
-## Printing the Table Sheets for entering results is recommended
+## Hantering av resultat
 
-The downloaded URL file is you primary backup.  
-The sheets with all results are your secondary backup.  
-You can handle a tournament without a printer, but it is not recommended for larger tournaments.  
-After pairing, go to the Downloads section of your browser (**ctrl+j**) and open the top file.  
-It contains Standings, Names and Tables.  
-Print the file, and put up the alphabetical Name sheets, well separated, in the *same* positions every round.  
+Om turneringen har få deltagare, kan man låta spelarna mata in resultaten själva. Vid många deltagare kan det vara bra att skriva ut en kopia av skärmen och låta spelarna skriva sina resultat där. Om datorn skulle gå sönder kan dessa resultatformulär användas för att återskapa turneringen.
 
-## Entering results
+## Ställning
 
-* As soon as a score sheet is completed, start entering the results, using the keyboard
-* Use **1**, **space** or **0** to enter the results
-* An erroneous result has to be deleted with the **Delete** key
+* Kolumner
+	* **pos** - Den som leder har nummer 1
+	* **id** - Spelarnummer
+	* **namn**
+	* **elo** - Spelarens elo-tal
+	* Ronder
+		* Den sista ronden används för att mata in resultatet
+	* **pr** - Spelarens Performance Rating.
+	* **pp** - Spelarens poäng
+	* **bd** - Anger bord och färg
+	* **diff** - elo skillnad mellan spelarna
+		* positiv innebär starkare spelare
+		* negativ innebär svagare spelare
+	* **id:bd** - Om man vet sitt id, kan man snabbt hitta sitt bord här
 
-## Enter results twice
+* Vald spelares motståndares elotal kan ses överst tillsammans med pr med tre decimaler
 
-Entering the same sheet twice, reduces mis-entering.  
-Delete the red line before entering the correct result.  
+## Nerladdningar
 
-## Standings
-
-* Columns
-	* **Pos** - the leader is number 1
-	* **Id** - the player identification
-	* **Elo** - the players current elo
-	* **Name**
-	* The rounds
-		* Green background - a Win
-		* Red background - a Loss
-		* Gray background - a Draw
-		* White id - white pieces
-		* Black id - black pieces
-	* **Quality** - the score weighted with the elo of the opponent.
-* Get detailed information about a game by hovering the mouse
-	* You will see the elo and name of the opponent, as well as *quality*
-
-## Downloads
-
-* After each pairing, two files will be saved
-	1. A copy of Standings, Names and Tables, for printing.
-	2. A backup file.
+* Efter varje rond sparas en backupfil

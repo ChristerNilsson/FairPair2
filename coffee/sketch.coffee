@@ -161,16 +161,7 @@ class Player
 
 	result: (r,index) ->
 		s = span @opp[r]+1, "class=" + @prettyCol r
-		# if @res[r] and @res[r] != ""
-#		if r < @opp.length-1
-			#echo 'tidigare ronder'
-#			t = span @prettyRes(r), "class=" + @prettyCol2 r
-			#echo 'bertil',td s + t
-#			td s + t
-#		else # senaste ronden
-#		echo 'result sista ronden',@error
 		t = span @prettyRes(r), "class=" + @prettyCol2 r
-		#echo 'cesar', td s + t
 		td s + t
 
 matrix = (i) ->

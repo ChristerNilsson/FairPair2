@@ -3,32 +3,17 @@
 FairPair 2 is a major rewrite of FairPair 1
 
 * Only one page is used
-* Performance Rating with extrapolation (magnusKarlsson) for 0% and 100% is used
-* p5js replaced with html
-* handles one or two games per round
+* Performance Rating with extrapolation (Magnus Karlsson) for 0% and 100% is used
 
-## Commands
-
-* 1: Enter a win
-* 0: Enter a loss
-* r or space: Enter a draw
-* Up Arrow
-* Down Arrow
-* Home
-* End
-* Delete
-* Pair
-* ctrl-p prints
 
 ## Advantages with FairPair
 
 [Try it!](https://christernilsson.github.io/FairPair2)
 
 * FairPair makes players of similar strength meet
-* To make players comparable, Enhanced Performance Rating is used
-* EPR = add a draw against an average player before calculating Performance Rating
+* To make players comparable, Performance Rating is used
 
-## Disadvantages with Swiss 
+## Disadvantages with Swiss
 
 * A win against the strongest is worth exactly as much as a win against the weakest
 * Big elo gaps gives very little new information
