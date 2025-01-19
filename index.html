@@ -77,14 +77,20 @@
 	</head>
 	<body>
 
-		<!-- <input
-			type="file"
-			style="position: absolute; top: 1px; left: 50%"
-			accept=".txt"
-			onchange="handleFileChange(event)"
-		/> -->
+		<input type="file" style="position:absolute; top:1px; left:1%" accept=".txt" onchange="handleFileChange(event)">
 
-		<script type="module" src="coffee/sketch.js"></script>
+		<!-- <script type="module" src="coffee/fairpair.js"></script> -->
+		<script type="module">
+			import { handleFile } from './coffee/sketch.js';
+			window.handleFileChange = function(event) {
+				const file = event.target.files[0];
+				console.log(file.name);
+				if (file) {file.text().then(text => {handleFile(file.name,text);}).catch(error => {console.error('Error reading file:', error);});}
+			}
+		</script>
+
+
+		<!-- <script type="module" src="coffee/sketch.js"></script> -->
 
 		<div id="app"></div>
 		<div id="info"></div>

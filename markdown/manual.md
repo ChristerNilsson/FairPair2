@@ -32,7 +32,6 @@ Om turneringen har få deltagare, kan man låta spelarna mata in resultaten sjä
 ## Ställning
 
 * Kolumner
-	* **pos** - Den som leder har nummer 1
 	* **id** - Spelarnummer
 	* **namn**
 	* **elo** - Spelarens elo-tal
@@ -40,11 +39,11 @@ Om turneringen har få deltagare, kan man låta spelarna mata in resultaten sjä
 		* Den sista ronden används för att mata in resultatet
 	* **pr** - Spelarens Performance Rating.
 	* **pp** - Spelarens poäng
-	* **bd** - Anger bord och färg
+	* **bf** - Anger bord och färg
 	* **diff** - elo skillnad mellan spelarna
 		* positiv innebär starkare spelare
 		* negativ innebär svagare spelare
-	* **id:bd** - Om man vet sitt id, kan man snabbt hitta sitt bord här
+	* **id:bf** - Om man vet sitt id, kan man snabbt hitta sitt bord här
 
 * Vald spelares motståndares elotal kan ses överst tillsammans med pr med tre decimaler
 
