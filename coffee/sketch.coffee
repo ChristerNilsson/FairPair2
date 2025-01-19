@@ -59,6 +59,9 @@ console.assert 3 == findNumberOfDecimals [1234.146,1234.147]
 export handleFile = (filename,data) ->
 	echo 'handleFile',filename,data
 	tournament = new Tournament filename,data
+	app.innerHTML = tournament.makeHTML()
+	for control in document.querySelectorAll '[tabindex]'
+		control.onkeydown = handleKeyDown
 
 sum = (s) ->
 	res = 0
@@ -90,18 +93,18 @@ console.assert ["1","1"], inverse ["1","1"]
 console.assert ["0","0"], inverse ["2","2"]
 
 # Kontrollerar att de båda resultaten matchar. Dvs 0-2 1-1 eller 2-0
-check = (p,q) ->
-	echo 'check',p.res,q.res
-	r = p.opp.length-1
-	if p.res[r] == undefined then p.res[r] = "" 
-	if q.res[r] == undefined then q.res[r] = "" 
-	#echo p.res[r].length, q.res[r].length, p.res[r], q.res[r], inverse p.res[r]
+# check = (p,q) ->
+# 	echo 'check',p.res,q.res
+# 	r = p.opp.length-1
+# 	if p.res[r] == undefined then p.res[r] = "" 
+# 	if q.res[r] == undefined then q.res[r] = "" 
+#	echo p.res[r].length, q.res[r].length, p.res[r], q.res[r], inverse p.res[r]
 
 #	p.error = p.res[r].length == 2 and q.res[r].length == 2 and p.res[r] != inverse q.res[r]
 #	p.error = p.res[r] != inverse q.res[r]
-	p.error = p.res[r] != inverse q.res[r]
+#	p.error = p.res[r] != inverse q.res[r]
 
-	if p.error then echo "error",p.name,q.name
+	# if p.error then echo "error",p.name,q.name
 
 export handleKeyDown = (event) -> # Enkelrond
 	echo 'handleKeyDown',event.key
@@ -111,8 +114,6 @@ export handleKeyDown = (event) -> # Enkelrond
 	p = playersByScore[index]
 	r = p.opp.length-1
 	cell = event.target.children[3+r]
-	# echo 'c o f f e e', event.key, cell #.target.tabIndex
-	q = playersByID[p.opp[r]]
 
 	if event.key == 'Enter'
 		echo 'Pair'
@@ -129,16 +130,13 @@ export handleKeyDown = (event) -> # Enkelrond
 
 	if event.key in "0 1"
 		p.res[r] = trans[event.key]
-		# check p, q
 		cell.innerHTML = p.result r,index-1
-		#echo p.result r,index-1
 		moveFocus index + 1
 
 	key = event.key.toUpperCase()
 	if key == event.key then dir = -1 else dir = 1
 	if key in "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ"
 		index = event.target.tabIndex # - 1
-		#echo index
 		n = playersByScore.length
 		for i in range n
 			if dir==1 then ix=(index+i+1) % n else ix = (index-i-1) %% n
@@ -153,13 +151,29 @@ pr = (rs, s, lo=0, hi=4000, r=(lo+hi)/2) -> if hi - lo < 0.001 then r else if s 
 # echo 'pr', pr [1900,2100], 1
 
 class Player
-	constructor : (@elo,@name,@opp=[],@col=[],@res=[]) ->
+	constructor : (@elo, @name, @opp=[], @col=[], @res=[]) ->
 		@active = true
 		@error = false
 		# @opp är en lista med heltal
 		# @col är en lista med -1 och 1
-		# @res håller ihop partierna i en sträng per rond och spelare
+		# @res är en lista med strängar "0", "1" eller "2"
 		# ["2","0"]   => 1.0 pp
+
+	check : -> # Kontrollerar att resultaten är konsistenta
+		r = @opp.length - 1
+		if r == -1 then return true
+		q = playersByID[@opp[r]]
+		if @res.length-1 < r 
+			echo "Resultat saknas för #{@name}"
+			return false
+		if q.res.length-1 < r 
+			echo "Resultat saknas för #{q.name}"
+			return false
+		a = @res[r] / 2
+		b = q.res[r] / 2
+		if a + b == 1 then return true
+		echo "Felaktigt resultat för #{@name} mot #{q.name}: #{a} - #{b}"
+		false
 
 	balans : -> sum @col
 
@@ -282,6 +296,8 @@ class Tournament
 		echo 'playersByScore', playersByScore
 
 	pair : ->
+		for p in playersByID
+			if not p.check() then return 
 		solution = @findSolution @makeEdges -1
 		arr = makePairs solution
 		# paret med högst elo sitter på bord 1
@@ -490,7 +506,10 @@ class Tournament
 				
 			# pr
 			pr = p.performance()
-			s += td pr.toFixed(decimals) #,ta_right
+			if pr < 3999
+				s += td pr.toFixed(decimals) #,ta_right
+			else
+				s += td ""
 
 			s += td p.prettyScore(),ta_right # pp
 
@@ -542,22 +561,12 @@ class Tournament
 					pa.col.push 1
 
 	handleRes : (pi,pa) ->
-		si = ""
-		sa = ""
-		remi = 0.05
-		# for ppr in range PPR
 		z = random()
-		if z < 0.5 - remi
-			si = "2" # 2
-			sa = "0" # 0
-		else if z > 0.5 + remi 
-			si = "0" # 0 
-			sa = "2" # 2
-		else 
-			si = "1" # 1
-			sa = "1" # 1
-		pi.res.push si
-		pa.res.push sa
+		[si,sa] = [1,1]
+		if z < 0.45 then [si,sa] = [2,0]
+		if z > 0.55 then [si,sa] = [0,2]
+		pi.res.push si.toString()
+		pa.res.push sa.toString()
 
 	# uppdaterar opp, col och res.
 	makeOppColRes : (pairs,flag) ->
@@ -612,9 +621,7 @@ PAUSED=
 # echo playersByID
 
 tournament = new Tournament "demo", data # playersByID
-
 app.innerHTML = tournament.makeHTML()
-
 for control in document.querySelectorAll '[tabindex]'
 	control.onkeydown = handleKeyDown
 
