@@ -14,7 +14,9 @@
 * space: Mata in en remi
 * Delete: Tag bort ett resultat
 
-* Pair
+* Enter: Lottar nästa rond om alla resultat matats in
+* Pause: Pausar/Aktiverar markerad spelare
+
 * ctrl-p skriver ut skärmen
 
 * Du kan klicka på en rad för att markera en spelare 

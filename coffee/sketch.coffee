@@ -20,10 +20,11 @@ KEYWORDS.PPP = 'integer (Players Per Page, default: 60)'
 
 g = {}
 
-# Dessa tre arrayer pekar alla på samma data. De är dock olika sorterade
-playersByELO = []
-playersByID = []
-playersByScore = []
+# Dessa två listor pekar båda på samma data. De är dock olika sorterade
+playersByID = []    # ELO
+playersByScore = [] # Performance
+
+tournament = null
 
 span  = (s,attrs="") -> "<span #{attrs}>#{s}</span>"
 table = (s,attrs="") -> "<table #{attrs}>\n#{s}</table>"
@@ -35,11 +36,29 @@ seed = 0
 random = -> (((Math.sin(seed++)/2+0.5)*10000)%100)/100
 
 app = document.getElementById 'app'
-info = document.getElementById 'info'
+# info = document.getElementById 'info'
+
+makePairs = (solution) ->
+	res = []
+	for j in range solution.length
+		if j < solution[j] then res.push [j,solution[j]]
+	res
+
+findNumberOfDecimals = (lst) ->
+	best = 0
+	for i in range 4
+		unik = _.uniq (item.toFixed(i) for item in lst)
+		if unik.length > best then [best,ibest] = [unik.length,i]
+	ibest
+console.assert 0 == findNumberOfDecimals [1234,1235]
+console.assert 0 == findNumberOfDecimals [1234.146,1234.146]
+console.assert 0 == findNumberOfDecimals [1235.123,1236.123]
+console.assert 1 == findNumberOfDecimals [1234,1234.4]
+console.assert 3 == findNumberOfDecimals [1234.146,1234.147]
 
 export handleFile = (filename,data) ->
 	echo 'handleFile',filename,data
-	tournament.fetchData filename,data
+	tournament = new Tournament filename,data
 
 sum = (s) ->
 	res = 0
@@ -53,15 +72,13 @@ sumNumbers = (arr) ->
 		res += item
 	res
 
-playersByELO = []
-
 moveFocus = (next) ->
 	focusable = document.querySelectorAll('[tabindex]')
 	focusableArray = Array.from(focusable)
 	newIndex = next %% focusableArray.length
 	current = newIndex
 	focusableArray[newIndex].focus()
-	info.innerHTML = tournament.info()
+	# info.innerHTML = tournament.info()
 
 inverse = (s) -> 
 	res = []
@@ -87,6 +104,7 @@ check = (p,q) ->
 	if p.error then echo "error",p.name,q.name
 
 export handleKeyDown = (event) -> # Enkelrond
+	echo 'handleKeyDown',event.key
 	trans = {"0":"0", ' ':"1", "1": "2"}
 	if event == undefined then return
 	index = event.target.tabIndex # - 1
@@ -94,7 +112,11 @@ export handleKeyDown = (event) -> # Enkelrond
 	r = p.opp.length-1
 	cell = event.target.children[3+r]
 	# echo 'c o f f e e', event.key, cell #.target.tabIndex
-	q = playersByELO[p.opp[r]]
+	q = playersByID[p.opp[r]]
+
+	if event.key == 'Enter'
+		echo 'Pair'
+		tournament.pair()
 
 	if event.key == 'Delete'
 		p.res[r] = ""
@@ -103,7 +125,7 @@ export handleKeyDown = (event) -> # Enkelrond
 	if event.key == 'ArrowDown' then moveFocus index+1
 	if event.key == 'ArrowUp'   then moveFocus index-1
 	if event.key == 'Home'      then moveFocus 0
-	if event.key == 'End'       then moveFocus playersByELO.length - 1
+	if event.key == 'End'       then moveFocus playersByID.length - 1
 
 	if event.key in "0 1"
 		p.res[r] = trans[event.key]
@@ -203,7 +225,7 @@ class Player
 		for r in range @opp.length - 1
 			# if @opp[r] == BYE then continue
 			# if @opp[r] == PAUSE then continue
-			elos.push playersByELO[@opp[r]].elo
+			elos.push playersByID[@opp[r]].elo
 
 		n = elos.length
 		if n == 1
@@ -227,37 +249,53 @@ class Player
 		t = span @prettyRes(r), "class=" + @prettyCol2 r
 		td s + t
 
-	info : ->
-		return 'no info'
-		res = []
-		for i in range @opp.length-1
-			res.push playersByELO[@opp[i]].elo.toString()
-		res.push @score().toFixed 1
-		res.push "=>"
-		res.push @performance().toFixed 3
-		res.join " "
+	# info : ->
+	# 	res = []
+	# 	for i in range @opp.length-1
+	# 		res.push playersByID[@opp[i]].elo.toString()
+	# 	res.push @score().toFixed 1
+	# 	res.push "=>"
+	# 	res.push @performance().toFixed 3
+	# 	res.join " "
 
 matrix = (i) ->
-	res = Array(playersByELO.length).fill('•') 
+	res = Array(playersByID.length).fill('•') 
 	res[i] = '*'
 	if i == 0 then res[0]='H'
-	if i == playersByELO.length-1 then res[i]='L'
-	pi = playersByELO[i]
+	if i == playersByID.length-1 then res[i]='L'
+	pi = playersByID[i]
 	for r in range pi.opp.length
 		res[pi.opp[r]] = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r]
 	res.join " "
 
-add = (elo,name) -> 
-	opp = []
-	col = []
-	res = []
-	playersByELO.push new Player elo,name,opp,col,res
+# add = (elo,name) -> 
+# 	opp = []
+# 	col = []
+# 	res = []
+# 	playersByID.push new Player elo,name,opp,col,res
 
 class Tournament
 	constructor : (filename, data) ->
 		@fetchData filename, data
 		playersByScore = _.clone playersByID
+
 		echo 'playersByScore', playersByScore
+
+	pair : ->
+		solution = @findSolution @makeEdges -1
+		arr = makePairs solution
+		# paret med högst elo sitter på bord 1
+		arr.sort (a,b)-> 
+			a0 = playersByID[a[0]].elo
+			a1 = playersByID[a[1]].elo
+			b0 = playersByID[b[0]].elo
+			b1 = playersByID[b[1]].elo
+			b0 + b1 - a0 - a1
+		@makeOppColRes arr, false # i < antal-1
+		@sort()
+		app.innerHTML = @makeHTML()
+		for control in document.querySelectorAll '[tabindex]'
+			control.onkeydown = handleKeyDown
 
 	fetchData : (filename, data) ->
 		# randomSeed 99
@@ -312,8 +350,8 @@ class Tournament
 		players = hash.PLAYERS
 		g.N = players.length
 
-		if not (4 <= g.N < 1000)
-			alert "Number of players must be between 4 and 999!"
+		if not (4 <= g.N < 100)
+			alert "Number of players must be between 4 and 99!"
 			return
 
 		playersByID = []
@@ -343,9 +381,6 @@ class Tournament
 		for i in range g.N
 			playersByID[i].id = i
 		
-		playersByELO = _.clone playersByID
-
-		echo 'playersByELO', playersByELO
 		echo 'playersByID', playersByID 
 
 		# @playersByName = _.sortBy @playersByID, (player) -> player.name
@@ -408,8 +443,8 @@ class Tournament
 
 	sort : -> playersByScore.sort (a,b)-> b.performance() - a.performance()
 
-	info : -> 
-		playersByScore[current].info()
+	# info : -> 
+	# 	playersByScore[current].info()
 
 	headers : (R) ->
 		h = ""
@@ -436,6 +471,10 @@ class Tournament
 		ta_right  = "style='text-align:right'"
 		ta_center = "style='text-align:center'"
 		ta_center_strong = "style='text-align:center; font-weight: bold;'"
+
+		prs = (p.performance() for p in playersByID)
+		decimals = findNumberOfDecimals prs
+
 		for i in range playersByScore.length
 			p = playersByScore[i]
 			#if i==0 then current = p.id
@@ -451,7 +490,7 @@ class Tournament
 				
 			# pr
 			pr = p.performance()
-			s += td pr.toFixed(1) #,ta_right
+			s += td pr.toFixed(decimals) #,ta_right
 
 			s += td p.prettyScore(),ta_right # pp
 
@@ -466,11 +505,11 @@ class Tournament
 			s += td bf, ta_center_strong
 
 			# diff
-			if R >= 1 then s += td playersByELO[p.opp[R-1]].elo - p.elo, ta_right else s += td ""
+			if R >= 1 then s += td playersByID[p.opp[R-1]].elo - p.elo, ta_right else s += td ""
 
 
 			# id:bd
-			q = playersByELO[i]
+			q = playersByID[i]
 			if R >= 1 then s += td "#{i+1}:#{q.table + {l:'B',r:'W'}[q.prettyCol(R-1)[1]]}" , ta_right else s += td ""
 
 			# s += td matrix i
@@ -520,6 +559,7 @@ class Tournament
 		pi.res.push si
 		pa.res.push sa
 
+	# uppdaterar opp, col och res.
 	makeOppColRes : (pairs,flag) ->
 		bord = 0
 		for pair in pairs
@@ -539,21 +579,6 @@ class Tournament
 			@handleCol pa,pb
 			if flag then @handleRes pa,pb
 			
-# add 1598,"AIKIO Onni"
-# add 1539,"ANDERSSON Lars Owe"
-# add 1532,"ANTONSSON Görgen"
-# add 1697,"BJÖRKDAHL Göran"
-# add 1598,"ISRAEL Dan"
-# add 1825,"JOHANSSON Lennart"
-# add 1559,"LEHVONEN Jouko"
-# add 1561,"LILJESTRÖM Tor"
-# add 1583,"PERSSON Kjell"
-# add 1644,"PETTERSSON Lars-Åke"
-# add 1684,"SILINS Peteris"
-# add 1681,"STOLOV Leonid"
-# add 1400,"STRÖMBÄCK Henrik"
-# add 1535,"ÅBERG Lars-Erik"
-
 data = """
 TITLE=Senior Stockholm
 DATE=2025-01-19
@@ -578,52 +603,28 @@ PAUSED=
 1400!STRÖMBÄCK Henrik
 """
 
-# playersByELO.sort (a,b)-> b.elo - a.elo
+# playersByID.sort (a,b)-> b.elo - a.elo
 
-# for i in range playersByELO.length
-# 	player = playersByELO[i]
+# for i in range playersByID.length
+# 	player = playersByID[i]
 # 	player.id = i # zero based internally
 
-# echo playersByELO
+# echo playersByID
 
-tournament = new Tournament "demo", data # playersByELO
-
-makePairs = (solution) ->
-	res = []
-	for j in range solution.length
-		if j < solution[j] then res.push [j,solution[j]]
-	res
-
-antal = 4
-for i in range antal
-	solution = tournament.findSolution tournament.makeEdges -1
-	arr = makePairs solution
-	# paret med högst elo sitter på bord 1
-	arr.sort (a,b)-> 
-		a0 = playersByELO[a[0]].elo
-		a1 = playersByELO[a[1]].elo
-		b0 = playersByELO[b[0]].elo
-		b1 = playersByELO[b[1]].elo
-		b0 + b1 - a0 - a1
-
-	tournament.makeOppColRes arr, i < antal-1
-
-tournament.sort()
+tournament = new Tournament "demo", data # playersByID
 
 app.innerHTML = tournament.makeHTML()
-info.innerHTML = tournament.info()
 
 for control in document.querySelectorAll '[tabindex]'
 	control.onkeydown = handleKeyDown
 
 moveFocus 0
-echo app.innerHTML
 
 document.addEventListener 'DOMContentLoaded', ->
 	# app = document.getElementById 'app'
 	app.onwheel = (event) ->
 		event.preventDefault()
-		n = playersByELO.length-1
+		n = playersByID.length-1
 		if event.deltaY < 0 
 			if current > 0 then moveFocus current - 1
 		else 

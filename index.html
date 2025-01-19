@@ -77,7 +77,7 @@
 	</head>
 	<body>
 
-		<input type="file" style="position:absolute; top:1px; left:1%" accept=".txt" onchange="handleFileChange(event)">
+		<input id="input" type="file" style="position:absolute; top:1px; left:1%" accept=".txt" onchange="handleFileChange(event)">
 
 		<!-- <script type="module" src="coffee/fairpair.js"></script> -->
 		<script type="module">
@@ -86,6 +86,8 @@
 				const file = event.target.files[0];
 				console.log(file.name);
 				if (file) {file.text().then(text => {handleFile(file.name,text);}).catch(error => {console.error('Error reading file:', error);});}
+				const button = document.getElementById('input');
+				button.style.display = 'none';
 			}
 		</script>
 
@@ -105,85 +107,85 @@
 		</script> -->
 
 		
-		<script type="module">
+		<!-- <script type="module">
 
 			import { handleKeyDown } from './coffee/sketch.js'
 
 			handleKeyDown()
 
-			// function indicate (input,other) {
-			// 	const a = input.value
-			// 	const b = other.value
-			// 	const na = a.length
-			// 	const nb = b.length
+			function indicate (input,other) {
+				const a = input.value
+				const b = other.value
+				const na = a.length
+				const nb = b.length
 
-			// 	input.style.backgroundColor = 'white'
-			// 	other.style.backgroundColor = 'white'
+				input.style.backgroundColor = 'white'
+				other.style.backgroundColor = 'white'
 
-			// 	const minimum = Math.min(na,nb)
-			// 	const ok = ['01','10','½½']
-			// 	input.style.backgroundColor = 'white'
-			// 	other.style.backgroundColor = 'white'
-			// 	for (i=0; i<minimum; i++) {
-			// 		const both = a[i]+b[i]
-			// 		console.log(both) 
-			// 		if (!ok.includes(both)) {
-			// 			input.style.backgroundColor = 'red'
-			// 			other.style.backgroundColor = 'red'
-			// 		}
-			// 	}
-			// }
+				const minimum = Math.min(na,nb)
+				const ok = ['01','10','½½']
+				input.style.backgroundColor = 'white'
+				other.style.backgroundColor = 'white'
+				for (i=0; i<minimum; i++) {
+					const both = a[i]+b[i]
+					console.log(both) 
+					if (!ok.includes(both)) {
+						input.style.backgroundColor = 'red'
+						other.style.backgroundColor = 'red'
+					}
+				}
+			}
 
-			// // const pairs = [1,0,3,2,5,4,7,6]
-			// const pairs = [7,6,5,4,3,2,1,0]
-			// function moveToNext(current) {
-			// 	const s = current.value
-			// 	const n = s.length				
+			// const pairs = [1,0,3,2,5,4,7,6]
+			const pairs = [7,6,5,4,3,2,1,0]
+			function moveToNext(current) {
+				const s = current.value
+				const n = s.length				
 
-			// 	const inputs = document.querySelectorAll("input");
-			// 	var index = Array.from(inputs).indexOf(current)
-			// 	var other = pairs[index]
+				const inputs = document.querySelectorAll("input");
+				var index = Array.from(inputs).indexOf(current)
+				var other = pairs[index]
 
-			// 	if (n==1) {
-			// 		var first = s[n-1]
-			// 		if ("01r ".indexOf(first) == -1) {
-			// 			current.value = ""
-			// 			return
-			// 		}
-			// 		if (first==' ') first='½'
-			// 		if (first=='r') first='½'
-			// 		current.value = first
-			// 	} else if (n==2) {
-			// 		first = s[0]
-			// 		second = s[1]
-			// 		if (second==' ') second='½'
-			// 		if (second=='r') second='½'
-			// 		current.value = first + second
-			// 	}
-			// 	indicate(inputs[index],inputs[other])
+				if (n==1) {
+					var first = s[n-1]
+					if ("01r ".indexOf(first) == -1) {
+						current.value = ""
+						return
+					}
+					if (first==' ') first='½'
+					if (first=='r') first='½'
+					current.value = first
+				} else if (n==2) {
+					first = s[0]
+					second = s[1]
+					if (second==' ') second='½'
+					if (second=='r') second='½'
+					current.value = first + second
+				}
+				indicate(inputs[index],inputs[other])
 
-			// 	console.log(event)
+				console.log(event)
 
-			// 	if (current.value.length === current.maxLength) {
-			// 		index = (index+1) % inputs.length
-			// 			const next = inputs[index]
-			// 		if (next && next.tagName === "INPUT") {
-			// 			next.focus();
-			// 		}
-			// 	} else if (event.inputType === "deleteContentBackward" && current.value.length == 0) {
-			// 		index = (index-1) % inputs.length
-			// 		const prev = inputs[index]
-			// 		if (prev && prev.tagName === "INPUT") {
-			// 			prev.focus();
-			// 		}
-			// 	}
-			// }
+				if (current.value.length === current.maxLength) {
+					index = (index+1) % inputs.length
+						const next = inputs[index]
+					if (next && next.tagName === "INPUT") {
+						next.focus();
+					}
+				} else if (event.inputType === "deleteContentBackward" && current.value.length == 0) {
+					index = (index-1) % inputs.length
+					const prev = inputs[index]
+					if (prev && prev.tagName === "INPUT") {
+						prev.focus();
+					}
+				}
+			}
 
-			// function handleKeyDown(index) {
-			// 	console.log('handleKeyDown',index)
-			// }
+			function handleKeyDown(index) {
+				console.log('handleKeyDown',index)
+			}
 
-		</script>
+		</script> -->
 
 	</body>
 </html>
