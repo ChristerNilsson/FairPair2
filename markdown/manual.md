@@ -1,31 +1,24 @@
 # Hur man använder FairPair 2
 
-## Kommandon
+## Cheat Sheet
 
-* Down Arrow: gå till **nästa** spelare
-* Up Arrow: gå till **föregående** spelare
-* Home: gå till första spelaren
-* End: gåtill sista spelaren
-* Bokstav: gå till **nästa** spelare vars namn börjar med bokstaven
-* Shift-Bokstav: gå till **föregående** spelare vars namn börjar med bokstaven
-
-* 1: Mata in en vinst
-* 0: Mata in en förlust
-* space: Mata in en remi
-* Delete: Tag bort ett resultat
-
-* Enter: Lottar nästa rond om alla resultat matats in
-* Pause: Pausar/Aktiverar markerad spelare
-
-* ctrl-p skriver ut skärmen
+|Verb|Tangent|
+|-|-|
+|Zooma in|ctrl +|
+|Zooma ut|ctrl -|
+|Sök|a-ö A-Ö|
+|Upp|Uppåtpil|
+|Ner|Nedåtpil|
+|Vinst|1|
+|Remi|Mellanslag|
+|Förlust|0|
+|Ta bort|Delete|
+|Utskrift|ctrl p|
+|Pausa/Aktivera|Pause|
+|Lotta|Enter|
 
 * Du kan klicka på en rad för att markera en spelare 
 * Du kan även använda mushjulet
-
-## Zoom
-
-* ctrl + 
-* ctrl -
 
 ## Hantering av resultat
 
@@ -46,8 +39,6 @@ Om turneringen har få deltagare, kan man låta spelarna mata in resultaten sjä
 		* positiv innebär starkare spelare
 		* negativ innebär svagare spelare
 	* **id:bf** - Om man vet sitt id, kan man snabbt hitta sitt bord här
-
-* Vald spelares motståndares elotal kan ses överst tillsammans med pr med tre decimaler
 
 ## Nerladdningar
 

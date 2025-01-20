@@ -46,7 +46,7 @@ makePairs = (solution) ->
 
 findNumberOfDecimals = (lst) ->
 	best = 0
-	for i in range 4
+	for i in range 6
 		unik = _.uniq (item.toFixed(i) for item in lst)
 		if unik.length > best then [best,ibest] = [unik.length,i]
 	ibest
@@ -107,6 +107,7 @@ console.assert ["0","0"], inverse ["2","2"]
 	# if p.error then echo "error",p.name,q.name
 
 export handleKeyDown = (event) -> # Enkelrond
+	if event.key == ' ' then event.preventDefault()
 	echo 'handleKeyDown',event.key
 	trans = {"0":"0", ' ':"1", "1": "2"}
 	if event == undefined then return
@@ -218,7 +219,7 @@ class Player
 	performance_rating : (ratings, score) ->
 		lo = 0
 		hi = 4000
-		while hi - lo > 0.001
+		while hi - lo > 0.0000001
 			rating = (lo + hi) / 2
 			if score > xs ratings, rating
 				lo = rating
@@ -485,6 +486,8 @@ class Tournament
 
 		ta_left   = "style='text-align:left'"
 		ta_right  = "style='text-align:right'"
+		#ta_right_gray = "style='text-align:right; background-color:lightgray'"
+		#ta_right_darkgray = "style='text-align:right; background-color:gray'"
 		ta_center = "style='text-align:center'"
 		ta_center_strong = "style='text-align:center; font-weight: bold;'"
 
@@ -524,12 +527,12 @@ class Tournament
 			s += td bf, ta_center_strong
 
 			# diff
-			if R >= 1 then s += td playersByID[p.opp[R-1]].elo - p.elo, ta_right else s += td ""
+			if R >= 1 then s += td playersByID[p.opp[R-1]].elo - p.elo, ta_right else s += td "",ta_right
 
 
-			# id:bd
+			# id:bf
 			q = playersByID[i]
-			if R >= 1 then s += td "#{i+1}:#{q.table + {l:'B',r:'W'}[q.prettyCol(R-1)[1]]}" , ta_right else s += td ""
+			if R >= 1 then s += td "#{i+1}:#{q.table + {l:'B',r:'W'}[q.prettyCol(R-1)[1]]}" , ta_right else s += td "",ta_right
 
 			# s += td matrix i
 			t += tr s, "tabindex=#{i}"
