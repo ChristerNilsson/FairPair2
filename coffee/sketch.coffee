@@ -5,8 +5,6 @@ import { Edmonds } from './blossom.js'
 range = _.range
 echo = console.log
 
-current = 0 
-
 BYE = -1
 PAUSE = -2
 
@@ -25,6 +23,8 @@ playersByID = []    # ELO
 playersByScore = [] # Performance
 
 tournament = null
+
+currentPage = null
 
 span  = (s,attrs="") -> "<span #{attrs}>#{s}</span>"
 table = (s,attrs="") -> "<table #{attrs}>\n#{s}</table>"
@@ -59,9 +59,9 @@ console.assert 3 == findNumberOfDecimals [1234.146,1234.147]
 export handleFile = (filename,data) ->
 	echo 'handleFile',filename,data
 	tournament = new Tournament filename,data
-	app.innerHTML = tournament.makeHTML()
+	app.innerHTML = currentPage.makeHTML()
 	for control in document.querySelectorAll '[tabindex]'
-		control.onkeydown = handleKeyDown
+		control.onkeydown = currentPage.handleKeyDown
 
 sum = (s) ->
 	res = 0
@@ -74,14 +74,6 @@ sumNumbers = (arr) ->
 	for item in arr
 		res += item
 	res
-
-moveFocus = (next) ->
-	focusable = document.querySelectorAll('[tabindex]')
-	focusableArray = Array.from(focusable)
-	newIndex = next %% focusableArray.length
-	current = newIndex
-	focusableArray[newIndex].focus()
-	# info.innerHTML = tournament.info()
 
 inverse = (s) -> 
 	res = []
@@ -106,45 +98,6 @@ console.assert ["0","0"], inverse ["2","2"]
 
 	# if p.error then echo "error",p.name,q.name
 
-export handleKeyDown = (event) -> # Enkelrond
-	if event.key == ' ' then event.preventDefault()
-	echo 'handleKeyDown',event.key
-	trans = {"0":"0", ' ':"1", "1": "2"}
-	if event == undefined then return
-	index = event.target.tabIndex # - 1
-	p = playersByScore[index]
-	r = p.opp.length-1
-	cell = event.target.children[3+r]
-
-	if event.key == 'Enter'
-		echo 'Pair'
-		tournament.pair()
-
-	if event.key == 'Delete'
-		p.res[r] = ""
-		cell.innerHTML = p.result r,index-1
-		moveFocus index + 1
-	if event.key == 'ArrowDown' then moveFocus index+1
-	if event.key == 'ArrowUp'   then moveFocus index-1
-	if event.key == 'Home'      then moveFocus 0
-	if event.key == 'End'       then moveFocus playersByID.length - 1
-
-	if event.key in "0 1"
-		p.res[r] = trans[event.key]
-		cell.innerHTML = p.result r,index-1
-		moveFocus index + 1
-
-	key = event.key.toUpperCase()
-	if key == event.key then dir = -1 else dir = 1
-	if key in "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ"
-		index = event.target.tabIndex # - 1
-		n = playersByScore.length
-		for i in range n
-			if dir==1 then ix=(index+i+1) % n else ix = (index-i-1) %% n
-			p = playersByScore[ix]
-			if p.name.startsWith key
-				moveFocus ix
-				break
 	
 xs = (ratings, own_rating) -> sumNumbers(1 / (1 + 10**((rating - own_rating) / 400)) for rating in ratings)
 
@@ -264,35 +217,231 @@ class Player
 		t = span @prettyRes(r), "class=" + @prettyCol2 r
 		td s + t
 
-	# info : ->
-	# 	res = []
-	# 	for i in range @opp.length-1
-	# 		res.push playersByID[@opp[i]].elo.toString()
-	# 	res.push @score().toFixed 1
-	# 	res.push "=>"
-	# 	res.push @performance().toFixed 3
-	# 	res.join " "
+# matrix = (i) ->
+# 	res = Array(playersByID.length).fill('•') 
+# 	res[i] = '*'
+# 	if i == 0 then res[0]='H'
+# 	if i == playersByID.length-1 then res[i]='L'
+# 	pi = playersByID[i]
+# 	for r in range pi.opp.length
+# 		res[pi.opp[r]] = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r]
+# 	res.join " "
 
-matrix = (i) ->
-	res = Array(playersByID.length).fill('•') 
-	res[i] = '*'
-	if i == 0 then res[0]='H'
-	if i == playersByID.length-1 then res[i]='L'
-	pi = playersByID[i]
-	for r in range pi.opp.length
-		res[pi.opp[r]] = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r]
-	res.join " "
+class Page 
+	constructor : ->
+		@current = 0 
 
-# add = (elo,name) -> 
-# 	opp = []
-# 	col = []
-# 	res = []
-# 	playersByID.push new Player elo,name,opp,col,res
+class PageTables extends Page
+	constructor : -> 
+		super()
+
+	headers : ->
+		h = ""
+		h += th "b",    'style="border:none"'
+		h += th "vit",  'style="border:none"'
+		h += th "elo",  'style="border:none"'
+		h += th "result",'style="border:none"'
+		h += th "elo",  'style="border:none"'
+		h += th "svart",'style="border:none"'
+		h += th "diff", 'style="border:none"'
+		h
+
+	makeHTML : ->
+		ta_left   = "style='text-align:left'"
+		ta_right  = "style='text-align:right'"
+		R = playersByScore[0].opp.length
+		t = ""
+
+		for i in range tournament.tables.length # playersByScore.length
+			[a,b] = tournament.tables[i]
+			p = playersByScore[a]
+			q = playersByScore[b]
+			s = ""
+
+			s += td i+1 # id
+			s += td p.name,ta_left # namn
+			s += td p.elo # elo
+			s += td "&nbsp; - &nbsp;" # res
+			s += td q.elo # elo
+			s += td q.name,ta_left # namn
+			s += td p.elo - q.elo, ta_right # diff
+
+			t += tr s, "tabindex=#{i}"
+
+		t = tr(@headers(R)) + t
+		table t,'style="border:none"'
+
+	moveFocus : (next) ->
+		focusable = document.querySelectorAll('[tabindex]')
+		focusableArray = Array.from(focusable)
+		newIndex = next %% focusableArray.length
+		@current = newIndex
+		focusableArray[newIndex].focus()
+		# info.innerHTML = tournament.info()
+
+	handleKeyDown : (event) ->
+		echo 'handleKeyDown Tables',event.key
+		index = event.target.tabIndex
+		tbl = tournament.tables[index]
+		p = playersByID[tbl[0]]
+		q = playersByID[tbl[1]]
+		r = p.opp.length-1
+		cell = event.target.children[3]
+
+		if event.key in ['ArrowLeft','ArrowRight']
+			currentPage = pageStandings
+			app.innerHTML = currentPage.makeHTML()
+			for control in document.querySelectorAll '[tabindex]'
+				control.onkeydown = currentPage.handleKeyDown
+		if event.key == 'Delete'
+			p.res[r] = ""
+			q.res[r] = ""
+			cell.innerHTML = "&nbsp; - &nbsp;" # p.result r,index-1
+			currentPage.moveFocus index + 1
+		if event.key in "0 1"
+			trans = {"0":"0", ' ':"1", "1": "2"}
+			snart = {"0":"2", ' ':"1", "1": "0"}
+			p.res[r] = trans[event.key]
+			q.res[r] = snart[event.key]
+			cell.innerHTML = {"0":"0 - 1", ' ':"½ - ½", "1": "1 - 0"}[event.key] # p.result r,index-1
+			currentPage.moveFocus index + 1
+
+		if event.key == 'ArrowDown' then currentPage.moveFocus index+1
+		if event.key == 'ArrowUp'   then currentPage.moveFocus index-1
+		if event.key == 'Home'      then currentPage.moveFocus 0
+		if event.key == 'End'       then currentPage.moveFocus tournament.tables.length - 1
+
+
+class PageStandings extends Page
+	constructor : -> 
+		super()
+		# @current = 0 
+
+	headers : (R) ->
+		h = ""
+		#h += th "pos",'style="border:none"'
+		h += th "id",'style="border:none"'
+		h += th "namn",'style="border:none"'
+		h += th "elo",'style="border:none"'
+		for i in range R
+			h += th i+1,'style="border:none"'
+		h += th "pr",'style="border:none"'
+		h += th "pp",'style="border:none"'
+		h += th "bf",'style="border:none"'
+		h += th "*",'style="border:none"'
+		h
+
+	makeHTML : ->
+		R = playersByScore[0].opp.length
+		echo 'makeHTML',R
+		t = ""
+
+		ta_left   = "style='text-align:left'"
+		ta_right  = "style='text-align:right'"
+		#ta_right_gray = "style='text-align:right; background-color:lightgray'"
+		#ta_right_darkgray = "style='text-align:right; background-color:gray'"
+		ta_center = "style='text-align:center'"
+		ta_center_strong = "style='text-align:center; font-weight: bold;'"
+
+		prs = (p.performance() for p in playersByID)
+		decimals = findNumberOfDecimals prs
+
+		for i in range playersByScore.length
+			p = playersByScore[i]
+			#if i==0 then current = p.id
+			s = ""
+
+			#s += td i+1,ta_right # pos
+			s += td p.id+1,ta_right # id
+			s += td p.name,ta_left # namn
+			s += td p.elo # elo
+
+			for r in range R
+				s += p.result r,i # ronder
+				
+			# pr
+			pr = p.performance()
+			if pr < 3999
+				s += td pr.toFixed(decimals) #,ta_right
+			else
+				s += td ""
+
+			s += td p.prettyScore(),ta_right # pp
+
+			# s += td "",'style="width:5px;border-top:none; border-bottom:none"' # empty
+
+			# s += td p.table + p.prettyCol(R-1)[0] + p.prettyCol2(R-1)[0],ta_center
+			# bf
+			if p.table
+				bf = p.table + {l:'B',r:'W'}[p.prettyCol(R-1)[1]]
+			else
+				bf = ""
+			s += td bf, ta_center_strong
+
+			# diff
+			# if R >= 1 then s += td playersByID[p.opp[R-1]].elo - p.elo, ta_right else s += td "",ta_right
+
+			# id:bf
+			# q = playersByID[i]
+			# if R >= 1 then s += td "#{i+1}:#{q.table + {l:'B',r:'W'}[q.prettyCol(R-1)[1]]}" , ta_right else s += td "",ta_right
+
+			# s += td matrix i
+			s += td "" # * (pause)
+			t += tr s, "tabindex=#{i}"
+
+		t = tr(@headers(R)) + t
+		table t,'style="border:none"'
+
+	moveFocus : (next) ->
+		focusable = document.querySelectorAll('[tabindex]')
+		focusableArray = Array.from(focusable)
+		newIndex = next %% focusableArray.length
+		@current = newIndex
+		focusableArray[newIndex].focus()
+		# info.innerHTML = tournament.info()
+
+	handleKeyDown : (event) -> # Enkelrond
+		if event.key in [' ','ArrowDown','ArrowUp'] then event.preventDefault()
+		echo 'handleKeyDown Standings',event.key
+		if event == undefined then return
+		index = event.target.tabIndex # - 1
+		p = playersByScore[index]
+		r = p.opp.length-1
+		cell = event.target.children[3+r]
+
+		if event.key == 'Enter'
+			echo 'Pair'
+			tournament.pair()
+
+		if event.key in ['ArrowLeft','ArrowRight']
+			currentPage = pageTables
+			app.innerHTML = currentPage.makeHTML()
+			for control in document.querySelectorAll '[tabindex]'
+				control.onkeydown = currentPage.handleKeyDown
+
+		if event.key == 'ArrowDown' then currentPage.moveFocus index+1
+		if event.key == 'ArrowUp'   then currentPage.moveFocus index-1
+		if event.key == 'Home'      then currentPage.moveFocus 0
+		if event.key == 'End'       then currentPage.moveFocus playersByID.length - 1
+
+
+		key = event.key.toUpperCase()
+		if key == event.key then dir = -1 else dir = 1
+		if key in "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ"
+			index = event.target.tabIndex # - 1
+			n = playersByScore.length
+			for i in range n
+				if dir==1 then ix=(index+i+1) % n else ix = (index-i-1) %% n
+				p = playersByScore[ix]
+				if p.name.startsWith key
+					currentPage.moveFocus ix
+					break
 
 class Tournament
 	constructor : (filename, data) ->
 		@fetchData filename, data
 		playersByScore = _.clone playersByID
+		@tables = []
 
 		echo 'playersByScore', playersByScore
 
@@ -300,19 +449,20 @@ class Tournament
 		for p in playersByID
 			if not p.check() then return 
 		solution = @findSolution @makeEdges -1
-		arr = makePairs solution
+		@tables = makePairs solution
+		echo 'tables',@tables
 		# paret med högst elo sitter på bord 1
-		arr.sort (a,b)-> 
+		@tables.sort (a,b)-> 
 			a0 = playersByID[a[0]].elo
 			a1 = playersByID[a[1]].elo
 			b0 = playersByID[b[0]].elo
 			b1 = playersByID[b[1]].elo
 			b0 + b1 - a0 - a1
-		@makeOppColRes arr, false # i < antal-1
+		@makeOppColRes @tables, false # i < antal-1
 		@sort()
-		app.innerHTML = @makeHTML()
+		app.innerHTML = currentPage.makeHTML()
 		for control in document.querySelectorAll '[tabindex]'
-			control.onkeydown = handleKeyDown
+			control.onkeydown = currentPage.handleKeyDown
 
 	fetchData : (filename, data) ->
 		# randomSeed 99
@@ -426,16 +576,6 @@ class Tournament
 		
 		@virgin = true
 
-		# g.pages = [new Tables, new Standings]
-
-		# g.pages[g.ACTIVE].setLista()
-		# g.pages[g.NAMES].setLista()
-		# g.pages[g.TABLES].setLista()
-		# g.pages[g.STANDINGS].setLista()
-
-		# g.state = g.TABLES
-
-
 	ok : (a,b) -> a.id != b.id and a.id not in b.opp and Math.abs(a.balans() + b.balans()) <= 2
 
 	makeEdges : (iBye) -> # iBye är ett id eller -1
@@ -463,82 +603,6 @@ class Tournament
 	# info : -> 
 	# 	playersByScore[current].info()
 
-	headers : (R) ->
-		h = ""
-		#h += th "pos",'style="border:none"'
-		h += th "id",'style="border:none"'
-		h += th "namn",'style="border:none"'
-		h += th "elo",'style="border:none"'
-		for i in range R
-			h += th i+1,'style="border:none"'
-		h += th "pr",'style="border:none"'
-		h += th "pp",'style="border:none"'
-		h += th "",'style="border:none"'
-		h += th "bf",'style="border:none"'
-		h += th "diff",'style="border:none"'
-		h += th "id:bf",'style="border:none"'
-		h
-
-	makeHTML : ->
-		R = playersByScore[0].opp.length
-		echo 'makeHTML',R
-		t = ""
-
-		ta_left   = "style='text-align:left'"
-		ta_right  = "style='text-align:right'"
-		#ta_right_gray = "style='text-align:right; background-color:lightgray'"
-		#ta_right_darkgray = "style='text-align:right; background-color:gray'"
-		ta_center = "style='text-align:center'"
-		ta_center_strong = "style='text-align:center; font-weight: bold;'"
-
-		prs = (p.performance() for p in playersByID)
-		decimals = findNumberOfDecimals prs
-
-		for i in range playersByScore.length
-			p = playersByScore[i]
-			#if i==0 then current = p.id
-			s = ""
-
-			#s += td i+1,ta_right # pos
-			s += td p.id+1,ta_right # id
-			s += td p.name,ta_left # namn
-			s += td p.elo # elo
-
-			for r in range R
-				s += p.result r,i # ronder
-				
-			# pr
-			pr = p.performance()
-			if pr < 3999
-				s += td pr.toFixed(decimals) #,ta_right
-			else
-				s += td ""
-
-			s += td p.prettyScore(),ta_right # pp
-
-			s += td "",'style="width:5px;border-top:none; border-bottom:none"' # empty
-
-			# s += td p.table + p.prettyCol(R-1)[0] + p.prettyCol2(R-1)[0],ta_center
-			# bf
-			if p.table
-				bf = p.table + {l:'B',r:'W'}[p.prettyCol(R-1)[1]]
-			else
-				bf = ""
-			s += td bf, ta_center_strong
-
-			# diff
-			if R >= 1 then s += td playersByID[p.opp[R-1]].elo - p.elo, ta_right else s += td "",ta_right
-
-
-			# id:bf
-			q = playersByID[i]
-			if R >= 1 then s += td "#{i+1}:#{q.table + {l:'B',r:'W'}[q.prettyCol(R-1)[1]]}" , ta_right else s += td "",ta_right
-
-			# s += td matrix i
-			t += tr s, "tabindex=#{i}"
-
-		t = tr(@headers(R)) + t
-		table t,'style="border:none"'
 
 	handleCol : (pi,pa) ->
 		if pi.col.length == 0
@@ -623,12 +687,17 @@ PAUSED=
 
 # echo playersByID
 
-tournament = new Tournament "demo", data # playersByID
-app.innerHTML = tournament.makeHTML()
-for control in document.querySelectorAll '[tabindex]'
-	control.onkeydown = handleKeyDown
+# currentPage = new PageStandings()
+pageStandings = new PageStandings()
+pageTables = new PageTables() 
+currentPage = pageStandings
 
-moveFocus 0
+tournament = new Tournament "demo", data # playersByID
+app.innerHTML = currentPage.makeHTML()
+for control in document.querySelectorAll '[tabindex]'
+	control.onkeydown = currentPage.handleKeyDown
+
+#currentPage.moveFocus 0
 
 document.addEventListener 'DOMContentLoaded', ->
 	# app = document.getElementById 'app'
@@ -636,6 +705,9 @@ document.addEventListener 'DOMContentLoaded', ->
 		event.preventDefault()
 		n = playersByID.length-1
 		if event.deltaY < 0 
-			if current > 0 then moveFocus current - 1
+			if currentPage.current > 0 then currentPage.moveFocus currentPage.current - 1
 		else 
-			if current < n then moveFocus current + 1
+			if currentPage.current < n then currentPage.moveFocus currentPage.current + 1
+
+export handleKeydown = (event) ->
+	currentPage.handleKeyDown event

@@ -9,7 +9,7 @@ import {
   range,
   scalex,
   scaley
-} from './globals.js';
+} from './graveyard/globals.js';
 
 import {
   Page
@@ -22,7 +22,7 @@ import {
 
 import {
   Lista
-} from './lista.js';
+} from './graveyard/lista.js';
 
 compare = function(pa, pb) {
   var a, b;

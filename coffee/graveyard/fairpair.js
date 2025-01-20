@@ -26,7 +26,7 @@ import {
 
 import {
   Tables
-} from './page_tables.js';
+} from '../page_tables.js';
 
 import {
   Names

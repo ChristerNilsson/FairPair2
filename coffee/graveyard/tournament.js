@@ -22,7 +22,7 @@ import {
 
 import {
   Edmonds
-} from './blossom.js';
+} from '../blossom.js';
 
 import {
   Tables
