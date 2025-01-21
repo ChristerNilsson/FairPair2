@@ -35,8 +35,7 @@ th    = (s,attrs="") -> "<th #{attrs}>#{s}</th>"
 seed = 0
 random = -> (((Math.sin(seed++)/2+0.5)*10000)%100)/100
 
-app = document.getElementById 'app'
-# info = document.getElementById 'info'
+header    = document.getElementById 'header'
 
 makePairs = (solution) ->
 	res = []
@@ -59,9 +58,9 @@ console.assert 3 == findNumberOfDecimals [1234.146,1234.147]
 export handleFile = (filename,data) ->
 	echo 'handleFile',filename,data
 	tournament = new Tournament filename,data
-	app.innerHTML = currentPage.makeHTML()
-	for control in document.querySelectorAll '[tabindex]'
-		control.onkeydown = currentPage.handleKeyDown
+	currentPage.makeHTML()
+	# for control in document.querySelectorAll '[tabindex]'
+	# 	control.onkeydown = currentPage.handleKeyDown
 
 sum = (s) ->
 	res = 0
@@ -84,21 +83,6 @@ console.assert ["2","2"], inverse ["0","0"]
 console.assert ["1","1"], inverse ["1","1"]
 console.assert ["0","0"], inverse ["2","2"]
 
-# Kontrollerar att de båda resultaten matchar. Dvs 0-2 1-1 eller 2-0
-# check = (p,q) ->
-# 	echo 'check',p.res,q.res
-# 	r = p.opp.length-1
-# 	if p.res[r] == undefined then p.res[r] = "" 
-# 	if q.res[r] == undefined then q.res[r] = "" 
-#	echo p.res[r].length, q.res[r].length, p.res[r], q.res[r], inverse p.res[r]
-
-#	p.error = p.res[r].length == 2 and q.res[r].length == 2 and p.res[r] != inverse q.res[r]
-#	p.error = p.res[r] != inverse q.res[r]
-#	p.error = p.res[r] != inverse q.res[r]
-
-	# if p.error then echo "error",p.name,q.name
-
-	
 xs = (ratings, own_rating) -> sumNumbers(1 / (1 + 10**((rating - own_rating) / 400)) for rating in ratings)
 
 pr = (rs, s, lo=0, hi=4000, r=(lo+hi)/2) -> if hi - lo < 0.001 then r else if s > xs rs, r then pr rs, s, r, hi else pr rs, s, lo, r
@@ -221,7 +205,7 @@ class Player
 # 	res = Array(playersByID.length).fill('•') 
 # 	res[i] = '*'
 # 	if i == 0 then res[0]='H'
-# 	if i == playersByID.length-1 then res[i]='L'
+# 	if i == playersByID.length-1 then res[i]='L's
 # 	pi = playersByID[i]
 # 	for r in range pi.opp.length
 # 		res[pi.opp[r]] = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r]
@@ -229,11 +213,23 @@ class Player
 
 class Page 
 	constructor : ->
-		@current = 0 
+	hide : -> @app.style.display = 'none'
+	show : -> @app.style.display = 'block'
+	makeHeader : ->
+		isoDate = new Date().toLocaleString('sv-se',{hour12:false}).replace(',','')
+		s = ""
+		s += td "Rond #{tournament.round}", 'style="border:none; width:33%; text-align:left"'
+		s += td tournament.title,           'style="border:none; width:33%; text-align:center"'
+		s += td isoDate,                    'style="border:none; width:33%; text-align:right"'
+		header = document.getElementById 'header'
+		header.innerHTML = table tr(s), 'style="width: 100%; font-weight: bold"'
 
 class PageTables extends Page
 	constructor : -> 
 		super()
+		@app = document.getElementById 'tables'
+		@klass = 'PageTables'
+		@current = 0 
 
 	headers : ->
 		h = ""
@@ -247,9 +243,10 @@ class PageTables extends Page
 		h
 
 	makeHTML : ->
+		R = tournament.round # playersByScore[0].opp.length
+		echo 'PageTables.makeHTML',R
 		ta_left   = "style='text-align:left'"
 		ta_right  = "style='text-align:right'"
-		R = playersByScore[0].opp.length
 		t = ""
 
 		for i in range tournament.tables.length # playersByScore.length
@@ -269,53 +266,69 @@ class PageTables extends Page
 			t += tr s, "tabindex=#{i}"
 
 		t = tr(@headers(R)) + t
-		table t,'style="border:none"'
+		@app.innerHTML = table t,'style="border:none"'
 
 	moveFocus : (next) ->
+		# Eftersom båda players + tables är tabbade samtidigt, måste players ignoreras här.
 		focusable = document.querySelectorAll('[tabindex]')
-		focusableArray = Array.from(focusable)
+		focusableArray = Array.from(focusable).slice playersByID.length,focusable.length
+		echo 'PageTables.moveFocus',focusableArray.length,next
 		newIndex = next %% focusableArray.length
 		@current = newIndex
 		focusableArray[newIndex].focus()
-		# info.innerHTML = tournament.info()
 
 	handleKeyDown : (event) ->
 		echo 'handleKeyDown Tables',event.key
-		index = event.target.tabIndex
-		tbl = tournament.tables[index]
-		p = playersByID[tbl[0]]
-		q = playersByID[tbl[1]]
-		r = p.opp.length-1
-		cell = event.target.children[3]
 
 		if event.key in ['ArrowLeft','ArrowRight']
+			currentPage.hide()
 			currentPage = pageStandings
-			app.innerHTML = currentPage.makeHTML()
-			for control in document.querySelectorAll '[tabindex]'
-				control.onkeydown = currentPage.handleKeyDown
-		if event.key == 'Delete'
-			p.res[r] = ""
-			q.res[r] = ""
-			cell.innerHTML = "&nbsp; - &nbsp;" # p.result r,index-1
-			currentPage.moveFocus index + 1
-		if event.key in "0 1"
-			trans = {"0":"0", ' ':"1", "1": "2"}
-			snart = {"0":"2", ' ':"1", "1": "0"}
-			p.res[r] = trans[event.key]
-			q.res[r] = snart[event.key]
-			cell.innerHTML = {"0":"0 - 1", ' ':"½ - ½", "1": "1 - 0"}[event.key] # p.result r,index-1
-			currentPage.moveFocus index + 1
+			currentPage.show()
+			currentPage.moveFocus currentPage.current
+			return
 
+		index = event.target.tabIndex
 		if event.key == 'ArrowDown' then currentPage.moveFocus index+1
 		if event.key == 'ArrowUp'   then currentPage.moveFocus index-1
 		if event.key == 'Home'      then currentPage.moveFocus 0
 		if event.key == 'End'       then currentPage.moveFocus tournament.tables.length - 1
 
+		if event.key == 'Enter'
+			echo 'Pair'
+			if tournament.pair()
+			# currentPage.hide()
+			# currentPage = pageTables
+				pageTables.makeHTML()
+				pageStandings.makeHTML()
+			# currentPage.show()
+
+		if event.key in ['Delete','0', ' ', '1']
+			tbl = tournament.tables[index]
+			p = playersByID[tbl[0]]
+			q = playersByID[tbl[1]]
+			r = p.opp.length-1
+			cell = event.target.children[3]
+
+			if event.key == 'Delete'
+				p.res[r] = ""
+				q.res[r] = ""
+				cell.innerHTML = "&nbsp; - &nbsp;" # p.result r,index-1
+				currentPage.moveFocus index + 1
+			if event.key in "0 1"
+				trans = {"0":"0", ' ':"1", "1": "2"}
+				snart = {"0":"2", ' ':"1", "1": "0"}
+				p.res[r] = trans[event.key]
+				q.res[r] = snart[event.key]
+				cell.innerHTML = {"0":"0 - 1", ' ':"½ - ½", "1": "1 - 0"}[event.key] # p.result r,index-1
+				currentPage.moveFocus index + 1
+
 
 class PageStandings extends Page
 	constructor : -> 
 		super()
-		# @current = 0 
+		@app = document.getElementById 'standings'
+		@klass = 'PageStandings'
+		@current = 0
 
 	headers : (R) ->
 		h = ""
@@ -332,20 +345,18 @@ class PageStandings extends Page
 		h
 
 	makeHTML : ->
-		R = playersByScore[0].opp.length
-		echo 'makeHTML',R
-		t = ""
+		R = tournament.round # playersByScore[0].opp.length
+		echo 'PageStandings.makeHTML',R
 
 		ta_left   = "style='text-align:left'"
 		ta_right  = "style='text-align:right'"
-		#ta_right_gray = "style='text-align:right; background-color:lightgray'"
-		#ta_right_darkgray = "style='text-align:right; background-color:gray'"
 		ta_center = "style='text-align:center'"
 		ta_center_strong = "style='text-align:center; font-weight: bold;'"
 
 		prs = (p.performance() for p in playersByID)
 		decimals = findNumberOfDecimals prs
 
+		t = ""
 		for i in range playersByScore.length
 			p = playersByScore[i]
 			#if i==0 then current = p.id
@@ -390,18 +401,26 @@ class PageStandings extends Page
 			t += tr s, "tabindex=#{i}"
 
 		t = tr(@headers(R)) + t
-		table t,'style="border:none"'
+		@app.innerHTML = table t,'style="border:none"'
 
 	moveFocus : (next) ->
 		focusable = document.querySelectorAll('[tabindex]')
+		echo 'PageStandings.moveFocus',focusable.length,next
 		focusableArray = Array.from(focusable)
 		newIndex = next %% focusableArray.length
 		@current = newIndex
 		focusableArray[newIndex].focus()
-		# info.innerHTML = tournament.info()
 
 	handleKeyDown : (event) -> # Enkelrond
 		if event.key in [' ','ArrowDown','ArrowUp'] then event.preventDefault()
+
+		if event.key in ['ArrowLeft','ArrowRight']
+			currentPage.hide()
+			currentPage = pageTables
+			currentPage.show()
+			currentPage.moveFocus currentPage.current
+			return 
+
 		echo 'handleKeyDown Standings',event.key
 		if event == undefined then return
 		index = event.target.tabIndex # - 1
@@ -410,21 +429,19 @@ class PageStandings extends Page
 		cell = event.target.children[3+r]
 
 		if event.key == 'Enter'
-			echo 'Pair'
-			tournament.pair()
-
-		if event.key in ['ArrowLeft','ArrowRight']
-			currentPage = pageTables
-			app.innerHTML = currentPage.makeHTML()
-			for control in document.querySelectorAll '[tabindex]'
-				control.onkeydown = currentPage.handleKeyDown
+			if tournament.pair()
+				currentPage.hide()
+				currentPage = pageTables
+				pageTables.makeHTML()
+				pageStandings.makeHTML()
+				currentPage.show()
 
 		if event.key == 'ArrowDown' then currentPage.moveFocus index+1
 		if event.key == 'ArrowUp'   then currentPage.moveFocus index-1
 		if event.key == 'Home'      then currentPage.moveFocus 0
 		if event.key == 'End'       then currentPage.moveFocus playersByID.length - 1
 
-
+		# Sökning
 		key = event.key.toUpperCase()
 		if key == event.key then dir = -1 else dir = 1
 		if key in "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ"
@@ -442,14 +459,19 @@ class Tournament
 		@fetchData filename, data
 		playersByScore = _.clone playersByID
 		@tables = []
+		@round = 0
 
 		echo 'playersByScore', playersByScore
 
 	pair : ->
 		for p in playersByID
-			if not p.check() then return 
+			if not p.check() then return false
 		solution = @findSolution @makeEdges -1
 		@tables = makePairs solution
+
+		@round += 1
+		currentPage.makeHeader()
+
 		echo 'tables',@tables
 		# paret med högst elo sitter på bord 1
 		@tables.sort (a,b)-> 
@@ -460,9 +482,10 @@ class Tournament
 			b0 + b1 - a0 - a1
 		@makeOppColRes @tables, false # i < antal-1
 		@sort()
-		app.innerHTML = currentPage.makeHTML()
-		for control in document.querySelectorAll '[tabindex]'
-			control.onkeydown = currentPage.handleKeyDown
+		currentPage.makeHTML()
+		# for control in document.querySelectorAll '[tabindex]'
+		# 	control.onkeydown = currentPage.handleKeyDown
+		true
 
 	fetchData : (filename, data) ->
 		# randomSeed 99
@@ -679,35 +702,16 @@ PAUSED=
 1400!STRÖMBÄCK Henrik
 """
 
-# playersByID.sort (a,b)-> b.elo - a.elo
-
-# for i in range playersByID.length
-# 	player = playersByID[i]
-# 	player.id = i # zero based internally
-
-# echo playersByID
-
-# currentPage = new PageStandings()
 pageStandings = new PageStandings()
 pageTables = new PageTables() 
+
+tournament = new Tournament "demo", data
 currentPage = pageStandings
+currentPage.makeHeader()
+currentPage.makeHTML()
 
-tournament = new Tournament "demo", data # playersByID
-app.innerHTML = currentPage.makeHTML()
-for control in document.querySelectorAll '[tabindex]'
-	control.onkeydown = currentPage.handleKeyDown
+currentPage.moveFocus 0
 
-#currentPage.moveFocus 0
-
-document.addEventListener 'DOMContentLoaded', ->
-	# app = document.getElementById 'app'
-	app.onwheel = (event) ->
-		event.preventDefault()
-		n = playersByID.length-1
-		if event.deltaY < 0 
-			if currentPage.current > 0 then currentPage.moveFocus currentPage.current - 1
-		else 
-			if currentPage.current < n then currentPage.moveFocus currentPage.current + 1
-
-export handleKeydown = (event) ->
+window.addEventListener 'keydown', (event) ->
+	echo 'keydown',currentPage.klass
 	currentPage.handleKeyDown event
