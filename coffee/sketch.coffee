@@ -58,7 +58,8 @@ console.assert 3 == findNumberOfDecimals [1234.146,1234.147]
 export handleFile = (filename,data) ->
 	echo 'handleFile',filename,data
 	tournament = new Tournament filename,data
-	currentPage.makeHTML()
+	pageStandings.makeHTML()
+	pageTables.makeHTML()
 	# for control in document.querySelectorAll '[tabindex]'
 	# 	control.onkeydown = currentPage.handleKeyDown
 
@@ -98,6 +99,7 @@ class Player
 		# ["2","0"]   => 1.0 pp
 
 	check : -> # Kontrollerar att resultaten är konsistenta
+		return true
 		r = @opp.length - 1
 		if r == -1 then return true
 		q = playersByID[@opp[r]]
@@ -150,6 +152,16 @@ class Player
 				summa += parseInt ch
 		summa/2
 
+	average : ->
+		summa = 0
+		n = @opp.length - 1
+		if n == -1 then return 0
+		for i in range n
+			opp = @opp[i]
+			p = playersByID[opp]
+			summa += p.elo
+		if n==0 then 0 else summa/n
+
 	prettyScore : ->
 		@score().toFixed(1).replace('.5','½').replace('.0','&nbsp;').replace("0½","½&nbsp;")
 
@@ -201,15 +213,15 @@ class Player
 		t = span @prettyRes(r), "class=" + @prettyCol2 r
 		td s + t
 
-# matrix = (i) ->
-# 	res = Array(playersByID.length).fill('•') 
-# 	res[i] = '*'
-# 	if i == 0 then res[0]='H'
-# 	if i == playersByID.length-1 then res[i]='L's
-# 	pi = playersByID[i]
-# 	for r in range pi.opp.length
-# 		res[pi.opp[r]] = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r]
-# 	res.join " "
+matrix = (i) ->
+	res = Array(playersByID.length).fill('•') 
+	res[i] = '*'
+	if i == 0 then res[0]='H'
+	if i == playersByID.length-1 then res[i]='L'
+	pi = playersByID[i]
+	for r in range pi.opp.length
+		res[pi.opp[r]] = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r]
+	res.join " "
 
 class Page 
 	constructor : ->
@@ -244,10 +256,12 @@ class PageTables extends Page
 
 	makeHTML : ->
 		R = tournament.round # playersByScore[0].opp.length
-		echo 'PageTables.makeHTML',R
+		# echo 'PageTables.makeHTML',R
 		ta_left   = "style='text-align:left'"
 		ta_right  = "style='text-align:right'"
 		t = ""
+
+		totalDiff = 0
 
 		for i in range tournament.tables.length # playersByScore.length
 			[a,b] = tournament.tables[i]
@@ -262,23 +276,27 @@ class PageTables extends Page
 			s += td q.elo # elo
 			s += td q.name,ta_left # namn
 			s += td p.elo - q.elo, ta_right # diff
+			totalDiff += Math.abs p.elo - q.elo
 
 			t += tr s, "tabindex=#{i}"
 
+		echo 'totalDiff',totalDiff
 		t = tr(@headers(R)) + t
 		@app.innerHTML = table t,'style="border:none"'
 
 	moveFocus : (next) ->
+		
 		# Eftersom båda players + tables är tabbade samtidigt, måste players ignoreras här.
 		focusable = document.querySelectorAll('[tabindex]')
 		focusableArray = Array.from(focusable).slice playersByID.length,focusable.length
-		echo 'PageTables.moveFocus',focusableArray.length,next
+		# echo 'PageTables.moveFocus',focusableArray.length,next
 		newIndex = next %% focusableArray.length
+		echo 'Tables.moveFocus',next,focusableArray.length,newIndex
 		@current = newIndex
 		focusableArray[newIndex].focus()
 
 	handleKeyDown : (event) ->
-		echo 'handleKeyDown Tables',event.key
+		# echo 'handleKeyDown Tables',event.key
 
 		if event.key in ['ArrowLeft','ArrowRight']
 			currentPage.hide()
@@ -342,11 +360,12 @@ class PageStandings extends Page
 		h += th "pp",'style="border:none"'
 		h += th "bf",'style="border:none"'
 		h += th "*",'style="border:none"'
+		h += th "avg",'style="border:none"'
 		h
 
 	makeHTML : ->
 		R = tournament.round # playersByScore[0].opp.length
-		echo 'PageStandings.makeHTML',R
+		# echo 'PageStandings.makeHTML',R
 
 		ta_left   = "style='text-align:left'"
 		ta_right  = "style='text-align:right'"
@@ -397,7 +416,9 @@ class PageStandings extends Page
 			# if R >= 1 then s += td "#{i+1}:#{q.table + {l:'B',r:'W'}[q.prettyCol(R-1)[1]]}" , ta_right else s += td "",ta_right
 
 			# s += td matrix i
+			echo matrix i
 			s += td "" # * (pause)
+			s += td p.average().toFixed 1
 			t += tr s, "tabindex=#{i}"
 
 		t = tr(@headers(R)) + t
@@ -405,9 +426,11 @@ class PageStandings extends Page
 
 	moveFocus : (next) ->
 		focusable = document.querySelectorAll('[tabindex]')
-		echo 'PageStandings.moveFocus',focusable.length,next
+		# echo 'PageStandings.moveFocus',focusable.length,next
 		focusableArray = Array.from(focusable)
 		newIndex = next %% focusableArray.length
+		echo 'Standings.moveFocus',next,focusableArray.length,newIndex
+
 		@current = newIndex
 		focusableArray[newIndex].focus()
 
@@ -421,7 +444,7 @@ class PageStandings extends Page
 			currentPage.moveFocus currentPage.current
 			return 
 
-		echo 'handleKeyDown Standings',event.key
+		# echo 'handleKeyDown Standings',event.key
 		if event == undefined then return
 		index = event.target.tabIndex # - 1
 		p = playersByScore[index]
@@ -480,7 +503,7 @@ class Tournament
 			b0 = playersByID[b[0]].elo
 			b1 = playersByID[b[1]].elo
 			b0 + b1 - a0 - a1
-		@makeOppColRes @tables, false # i < antal-1
+		@tables = @makeOppColRes @tables
 		@sort()
 		currentPage.makeHTML()
 		# for control in document.querySelectorAll '[tabindex]'
@@ -626,11 +649,14 @@ class Tournament
 	# info : -> 
 	# 	playersByScore[current].info()
 
-
-	handleCol : (pi,pa) ->
+	handleCol : (pi,pa,flag) ->
 		if pi.col.length == 0
-			pi.col.push -1
-			pa.col.push 1
+			if flag
+				pi.col.push -1
+				pa.col.push 1
+			else
+				pi.col.push 1
+				pa.col.push -1
 		else
 			if pi.balans() > pa.balans()
 				pi.col.push -1
@@ -647,8 +673,12 @@ class Tournament
 						pa.col.push -pa.col[j]
 						break
 				if not foundDiff
-					pi.col.push -1
-					pa.col.push 1
+					if flag 
+						pi.col.push -1
+						pa.col.push 1
+					else
+						pi.col.push 1
+						pa.col.push -1
 
 	handleRes : (pi,pa) ->
 		z = random()
@@ -658,9 +688,10 @@ class Tournament
 		pi.res.push si.toString()
 		pa.res.push sa.toString()
 
-	# uppdaterar opp, col och res.
-	makeOppColRes : (pairs,flag) ->
+	# uppdaterar opp och col
+	makeOppColRes : (pairs, flag=false) ->
 		bord = 0
+		res = []
 		for pair in pairs
 			a = pair[0]
 			b = pair[1]
@@ -675,8 +706,15 @@ class Tournament
 			pa.opp.push b
 			pb.opp.push a
 
-			@handleCol pa,pb
-			if flag then @handleRes pa,pb
+			@handleCol pa,pb, bord % 2 == 0
+
+			# vid lika färgvärden, alternera
+			n = pa.col.length
+			if pa.col[n-1] == 1
+				res.push [a,b]
+			else
+				res.push [b,a]
+		res
 			
 data = """
 TITLE=Senior Stockholm
@@ -713,5 +751,5 @@ currentPage.makeHTML()
 currentPage.moveFocus 0
 
 window.addEventListener 'keydown', (event) ->
-	echo 'keydown',currentPage.klass
+	# echo 'keydown',currentPage.klass
 	currentPage.handleKeyDown event
