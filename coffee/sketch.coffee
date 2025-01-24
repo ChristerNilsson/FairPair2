@@ -235,11 +235,18 @@ class Page
 		s += td isoDate,                    'style="border:none; width:33%; text-align:right"'
 		header = document.getElementById 'header'
 		header.innerHTML = table tr(s), 'style="width: 100%; font-weight: bold"'
+	moveFocus : (next) ->
+		@current = next
+		focusableArray = document.querySelectorAll('[tabindex]')
+		n = focusableArray.length
+		if @current <= -1 then @current = 0
+		if @current >= n then @current = n - 1
+		focusableArray[@current].focus()
 
 class PageTables extends Page
 	constructor : -> 
 		super()
-		@app = document.getElementById 'tables'
+		@app = document.getElementById 'app'
 		@klass = 'PageTables'
 		@current = 0 
 
@@ -272,7 +279,10 @@ class PageTables extends Page
 			s += td i+1 # id
 			s += td p.name,ta_left # namn
 			s += td p.elo # elo
+
+			# fyll i senaste resultaten om de finns!
 			s += td "&nbsp; - &nbsp;" # res
+
 			s += td q.elo # elo
 			s += td q.name,ta_left # namn
 			s += td p.elo - q.elo, ta_right # diff
@@ -280,20 +290,24 @@ class PageTables extends Page
 
 			t += tr s, "tabindex=#{i}"
 
-		echo 'totalDiff',totalDiff
+		# echo 'totalDiff',totalDiff
 		t = tr(@headers(R)) + t
 		@app.innerHTML = table t,'style="border:none"'
 
-	moveFocus : (next) ->
 		
-		# Eftersom båda players + tables är tabbade samtidigt, måste players ignoreras här.
-		focusable = document.querySelectorAll('[tabindex]')
-		focusableArray = Array.from(focusable).slice playersByID.length,focusable.length
-		# echo 'PageTables.moveFocus',focusableArray.length,next
-		newIndex = next %% focusableArray.length
-		echo 'Tables.moveFocus',next,focusableArray.length,newIndex
-		@current = newIndex
-		focusableArray[newIndex].focus()
+		# # Eftersom båda players + tables är tabbade samtidigt, måste players ignoreras här.
+		# focusableArray = document.querySelectorAll('[tabindex]')
+		# # focusableArray = Array.from(focusable) #.slice playersByID.length,focusable.length
+		# # echo 'PageTables.moveFocus',focusableArray.length,next
+
+		# if next <= -1 then next = 0
+		# if next >= focusableArray.length then next = focusableArray.length - 1
+		# newIndex = next #%% focusableArray.length
+
+		# # newIndex = next %% focusableArray.length
+		# # echo 'Tables.moveFocus',next,focusableArray.length,newIndex
+		# @current = newIndex
+		# focusableArray[newIndex].focus()
 
 	handleKeyDown : (event) ->
 		# echo 'handleKeyDown Tables',event.key
@@ -301,6 +315,7 @@ class PageTables extends Page
 		if event.key in ['ArrowLeft','ArrowRight']
 			currentPage.hide()
 			currentPage = pageStandings
+			currentPage.makeHTML()
 			currentPage.show()
 			currentPage.moveFocus currentPage.current
 			return
@@ -344,7 +359,7 @@ class PageTables extends Page
 class PageStandings extends Page
 	constructor : -> 
 		super()
-		@app = document.getElementById 'standings'
+		@app = document.getElementById 'app'
 		@klass = 'PageStandings'
 		@current = 0
 
@@ -416,7 +431,7 @@ class PageStandings extends Page
 			# if R >= 1 then s += td "#{i+1}:#{q.table + {l:'B',r:'W'}[q.prettyCol(R-1)[1]]}" , ta_right else s += td "",ta_right
 
 			# s += td matrix i
-			echo matrix i
+			#echo matrix i
 			s += td "" # * (pause)
 			s += td p.average().toFixed 1
 			t += tr s, "tabindex=#{i}"
@@ -424,22 +439,13 @@ class PageStandings extends Page
 		t = tr(@headers(R)) + t
 		@app.innerHTML = table t,'style="border:none"'
 
-	moveFocus : (next) ->
-		focusable = document.querySelectorAll('[tabindex]')
-		# echo 'PageStandings.moveFocus',focusable.length,next
-		focusableArray = Array.from(focusable)
-		newIndex = next %% focusableArray.length
-		echo 'Standings.moveFocus',next,focusableArray.length,newIndex
-
-		@current = newIndex
-		focusableArray[newIndex].focus()
-
 	handleKeyDown : (event) -> # Enkelrond
 		if event.key in [' ','ArrowDown','ArrowUp'] then event.preventDefault()
 
 		if event.key in ['ArrowLeft','ArrowRight']
 			currentPage.hide()
 			currentPage = pageTables
+			currentPage.makeHTML()
 			currentPage.show()
 			currentPage.moveFocus currentPage.current
 			return 
@@ -456,7 +462,7 @@ class PageStandings extends Page
 				currentPage.hide()
 				currentPage = pageTables
 				pageTables.makeHTML()
-				pageStandings.makeHTML()
+				# pageStandings.makeHTML()
 				currentPage.show()
 
 		if event.key == 'ArrowDown' then currentPage.moveFocus index+1
