@@ -59,9 +59,6 @@ export handleFile = (filename,data) ->
 	echo 'handleFile',filename,data
 	tournament = new Tournament filename,data
 	pageStandings.makeHTML()
-	pageTables.makeHTML()
-	# for control in document.querySelectorAll '[tabindex]'
-	# 	control.onkeydown = currentPage.handleKeyDown
 
 sum = (s) ->
 	res = 0
@@ -225,8 +222,6 @@ matrix = (i) ->
 
 class Page 
 	constructor : ->
-	hide : -> @app.style.display = 'none'
-	show : -> @app.style.display = 'block'
 	makeHeader : ->
 		isoDate = new Date().toLocaleString('sv-se',{hour12:false}).replace(',','')
 		s = ""
@@ -294,29 +289,12 @@ class PageTables extends Page
 		t = tr(@headers(R)) + t
 		@app.innerHTML = table t,'style="border:none"'
 
-		
-		# # Eftersom båda players + tables är tabbade samtidigt, måste players ignoreras här.
-		# focusableArray = document.querySelectorAll('[tabindex]')
-		# # focusableArray = Array.from(focusable) #.slice playersByID.length,focusable.length
-		# # echo 'PageTables.moveFocus',focusableArray.length,next
-
-		# if next <= -1 then next = 0
-		# if next >= focusableArray.length then next = focusableArray.length - 1
-		# newIndex = next #%% focusableArray.length
-
-		# # newIndex = next %% focusableArray.length
-		# # echo 'Tables.moveFocus',next,focusableArray.length,newIndex
-		# @current = newIndex
-		# focusableArray[newIndex].focus()
-
 	handleKeyDown : (event) ->
 		# echo 'handleKeyDown Tables',event.key
 
 		if event.key in ['ArrowLeft','ArrowRight']
-			currentPage.hide()
 			currentPage = pageStandings
 			currentPage.makeHTML()
-			currentPage.show()
 			currentPage.moveFocus currentPage.current
 			return
 
@@ -329,11 +307,7 @@ class PageTables extends Page
 		if event.key == 'Enter'
 			echo 'Pair'
 			if tournament.pair()
-			# currentPage.hide()
-			# currentPage = pageTables
 				pageTables.makeHTML()
-				pageStandings.makeHTML()
-			# currentPage.show()
 
 		if event.key in ['Delete','0', ' ', '1']
 			tbl = tournament.tables[index]
@@ -443,10 +417,8 @@ class PageStandings extends Page
 		if event.key in [' ','ArrowDown','ArrowUp'] then event.preventDefault()
 
 		if event.key in ['ArrowLeft','ArrowRight']
-			currentPage.hide()
 			currentPage = pageTables
 			currentPage.makeHTML()
-			currentPage.show()
 			currentPage.moveFocus currentPage.current
 			return 
 
@@ -459,11 +431,8 @@ class PageStandings extends Page
 
 		if event.key == 'Enter'
 			if tournament.pair()
-				currentPage.hide()
 				currentPage = pageTables
 				pageTables.makeHTML()
-				# pageStandings.makeHTML()
-				currentPage.show()
 
 		if event.key == 'ArrowDown' then currentPage.moveFocus index+1
 		if event.key == 'ArrowUp'   then currentPage.moveFocus index-1
@@ -512,8 +481,6 @@ class Tournament
 		@tables = @makeOppColRes @tables
 		@sort()
 		currentPage.makeHTML()
-		# for control in document.querySelectorAll '[tabindex]'
-		# 	control.onkeydown = currentPage.handleKeyDown
 		true
 
 	fetchData : (filename, data) ->
@@ -651,9 +618,6 @@ class Tournament
 		edmonds.maxWeightMatching edges
 
 	sort : -> playersByScore.sort (a,b)-> b.performance() - a.performance()
-
-	# info : -> 
-	# 	playersByScore[current].info()
 
 	handleCol : (pi,pa,flag) ->
 		if pi.col.length == 0
