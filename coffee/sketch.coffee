@@ -483,6 +483,8 @@ class Tournament
 			b0 + b1 - a0 - a1
 		@tables = @makeOppColRes @tables
 		@sort()
+		
+		echo 'playersByID',playersByID
 		for i in range playersByID.length
 			echo matrix i
 
@@ -601,7 +603,7 @@ class Tournament
 		
 		@virgin = true
 
-	ok : (a,b) -> a.id != b.id and a.id not in b.opp and Math.abs(a.balans() + b.balans()) <= 2
+	ok : (a,b) -> a.id != b.id and a.id not in b.opp and Math.abs(a.balans() + b.balans()) <= 1 #2
 
 	makeEdges : (iBye) -> # iBye är ett id eller -1
 		arr = []
