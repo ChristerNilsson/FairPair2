@@ -218,7 +218,7 @@ matrix = (i) ->
 	pi = playersByID[i]
 	for r in range pi.opp.length
 		res[pi.opp[r]] = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r]
-	res.join " "
+	res.join "   "
 
 class Page 
 	constructor : ->
@@ -284,6 +284,9 @@ class PageTables extends Page
 			totalDiff += Math.abs p.elo - q.elo
 
 			t += tr s, "tabindex=#{i}"
+
+		# for i in range playersByID.length
+		# 	echo matrix i
 
 		# echo 'totalDiff',totalDiff
 		t = tr(@headers(R)) + t
@@ -405,7 +408,7 @@ class PageStandings extends Page
 			# if R >= 1 then s += td "#{i+1}:#{q.table + {l:'B',r:'W'}[q.prettyCol(R-1)[1]]}" , ta_right else s += td "",ta_right
 
 			# s += td matrix i
-			#echo matrix i
+			# echo matrix i
 			s += td "" # * (pause)
 			s += td p.average().toFixed 1
 			t += tr s, "tabindex=#{i}"
@@ -480,6 +483,9 @@ class Tournament
 			b0 + b1 - a0 - a1
 		@tables = @makeOppColRes @tables
 		@sort()
+		for i in range playersByID.length
+			echo matrix i
+
 		currentPage.makeHTML()
 		true
 
@@ -611,6 +617,7 @@ class Tournament
 				if a < b then continue
 				if @ok pa,pb then arr.push [a,b, cost]
 		arr.sort (a,b) -> b[2] - a[2] # cost
+		echo 'edges',arr
 		arr
 
 	findSolution : (edges) -> 
@@ -666,8 +673,10 @@ class Tournament
 			a = pair[0]
 			b = pair[1]
 
-			pa = playersByScore[a]
-			pb = playersByScore[b]
+			# pa = playersByScore[a]
+			# pb = playersByScore[b]
+			pa = playersByID[a]
+			pb = playersByID[b]
 
 			bord += 1
 			pa.table = bord
