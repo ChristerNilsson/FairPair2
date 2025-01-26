@@ -5,8 +5,8 @@ import { Edmonds } from './blossom.js'
 range = _.range
 echo = console.log
 
-FAIRPAIR = true
-SWISS = false
+FAIRPAIR = false
+SWISS = true # https://arxiv.org/html/2112.10522v2 Swiss using Blossom
 
 BYE = -1
 PAUSE = -2
@@ -611,7 +611,7 @@ class Tournament
 		
 		@virgin = true
 
-	ok : (a,b) -> a.id != b.id and a.id not in b.opp and Math.abs(a.balans() + b.balans()) <= 2
+	ok : (a,b) -> a.id != b.id and a.id not in b.opp and Math.abs(a.balans() + b.balans()) <= 1
 
 	makeEdges_FAIRPAIR : (iBye) -> # iBye är ett id eller -1
 		arr = []
