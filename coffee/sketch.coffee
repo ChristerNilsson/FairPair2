@@ -5,6 +5,9 @@ import { Edmonds } from './blossom.js'
 range = _.range
 echo = console.log
 
+FAIRPAIR = false
+SWISS = true
+
 BYE = -1
 PAUSE = -2
 
@@ -144,7 +147,7 @@ class Player
 	score : ->
 		summa = 0
 		if @opp.length == 0 then return 0
-		for i in range @opp.length - 1
+		for i in range @res.length # - 1
 			for ch in @res[i]
 				summa += parseInt ch
 		summa/2
@@ -267,8 +270,8 @@ class PageTables extends Page
 
 		for i in range tournament.tables.length # playersByScore.length
 			[a,b] = tournament.tables[i]
-			p = playersByScore[a]
-			q = playersByScore[b]
+			p = playersByID[a]
+			q = playersByID[b]
 			s = ""
 
 			s += td i+1 # id
@@ -475,13 +478,22 @@ class Tournament
 
 		echo 'tables',@tables
 		# paret med högst elo sitter på bord 1
-		@tables.sort (a,b)-> 
-			a0 = playersByID[a[0]].elo
-			a1 = playersByID[a[1]].elo
-			b0 = playersByID[b[0]].elo
-			b1 = playersByID[b[1]].elo
-			b0 + b1 - a0 - a1
+		if FAIRPAIR 
+			@tables.sort (a,b)-> 
+				a0 = playersByID[a[0]].elo
+				a1 = playersByID[a[1]].elo
+				b0 = playersByID[b[0]].elo
+				b1 = playersByID[b[1]].elo
+				b0 + b1 - a0 - a1
+		if SWISS
+			@tables.sort (a,b)-> 
+				a0 = playersByID[a[0]].score()
+				a1 = playersByID[a[1]].score()
+				b0 = playersByID[b[0]].score()
+				b1 = playersByID[b[1]].score()
+				b0 + b1 - a0 - a1
 		@tables = @makeOppColRes @tables
+		
 		@sort()
 		
 		echo 'playersByID',playersByID
@@ -566,7 +578,6 @@ class Tournament
 			playersByID[i].elo = parseInt playersByID[i].elo
 			g.average += playersByID[i].elo
 		g.average /= g.N
-		# console.log 'average',g.average
 
 		playersByID.sort (a,b) ->  
 			if a.elo != b.elo then return b.elo - a.elo
@@ -576,9 +587,6 @@ class Tournament
 			playersByID[i].id = i
 		
 		echo 'playersByID', playersByID 
-
-		# @playersByName = _.sortBy @playersByID, (player) -> player.name
-		# echo 'playersByName', @playersByName
 
 		# extract @pairs from the last round
 		@pairs = []
@@ -603,9 +611,9 @@ class Tournament
 		
 		@virgin = true
 
-	ok : (a,b) -> a.id != b.id and a.id not in b.opp and Math.abs(a.balans() + b.balans()) <= 1 #2
+	ok : (a,b) -> a.id != b.id and a.id not in b.opp and Math.abs(a.balans() + b.balans()) <= 2
 
-	makeEdges : (iBye) -> # iBye är ett id eller -1
+	makeEdges_FAIRPAIR : (iBye) -> # iBye är ett id eller -1
 		arr = []
 		for pa in playersByScore
 			a = pa.id
@@ -622,11 +630,64 @@ class Tournament
 		echo 'edges',arr
 		arr
 
-	findSolution : (edges) -> 
+	makeEdges_SWISS : (iBye) -> # iBye är ett id eller -1
+
+		@sort()
+
+		echo 'makeEdges',playersByScore
+
+		hashx = {}
+		for i in range playersByScore.length
+			p = playersByScore[i]
+			p.rank = i
+			p.group = p.score().toFixed 1
+			if p.group not of hashx then hashx[p.group] = 0
+			hashx[p.group] += 1
+
+		echo 'hashx',hashx
+		for p in playersByID
+			p.groupSize = hashx[p.group]
+
+		echo 'playersByScore',playersByScore
+		echo 'playersByID',playersByID
+
+		arr = []
+		for pa in playersByID
+			a = pa.id
+			if not pa.active or a == iBye then continue
+			for pb in playersByID
+				b = pb.id
+				if b <= a then continue
+				if not pb.active or b == iBye then continue
+				if not @ok pa,pb then continue
+
+				d0 = Math.abs pa.score() - pb.score()
+				d1 = Math.abs pa.balans() + pb.balans()
+				if pa.group == pb.group 
+					d2 = Math.abs pa.groupSize/2 - Math.abs pa.rank - pb.rank
+				else
+					d2 = Math.abs pa.rank - pb.rank
+
+				diff = 10000 * d0 + 100 * d1 + d2 ** 1.01
+				echo "diff för #{a} #{b}: pag=#{pa.group} pbg=#{pb.group} pags=#{pa.groupSize} pbgs=#{pb.groupSize}  par=#{pa.rank} pbr=#{pb.rank} d0=#{d0} d1=#{d1} d2=#{d2} diff=#{diff} #{pa.name} vs #{pb.name}"
+
+				cost = 99999 - diff
+				arr.push [a, b, cost]
+
+		echo 'edges',arr
+		arr
+
+	makeEdges : (iBye) -> # iBye är ett id eller -1
+		if SWISS then return makeEdges_SWISS iBye
+		if FAIRPAIR then return makeEdges_FAIRPAIR iBye
+
+	findSolution : (edges) ->
 		edmonds = new Edmonds edges
 		edmonds.maxWeightMatching edges
 
-	sort : -> playersByScore.sort (a,b)-> b.performance() - a.performance()
+	sort : -> playersByScore.sort (a,b) ->
+		if SWISS then return b.score() - a.score()
+		if FAIRPAIR then return b.performance() - a.performance()
 
 	handleCol : (pi,pa,flag) ->
 		if pi.col.length == 0
@@ -675,8 +736,6 @@ class Tournament
 			a = pair[0]
 			b = pair[1]
 
-			# pa = playersByScore[a]
-			# pb = playersByScore[b]
 			pa = playersByID[a]
 			pb = playersByID[b]
 
