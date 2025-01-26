@@ -5,8 +5,8 @@ import { Edmonds } from './blossom.js'
 range = _.range
 echo = console.log
 
-FAIRPAIR = false
-SWISS = true
+FAIRPAIR = true
+SWISS = false
 
 BYE = -1
 PAUSE = -2
@@ -669,7 +669,7 @@ class Tournament
 					d2 = Math.abs pa.rank - pb.rank
 
 				diff = 10000 * d0 + 100 * d1 + d2 ** 1.01
-				echo "diff för #{a} #{b}: pag=#{pa.group} pbg=#{pb.group} pags=#{pa.groupSize} pbgs=#{pb.groupSize}  par=#{pa.rank} pbr=#{pb.rank} d0=#{d0} d1=#{d1} d2=#{d2} diff=#{diff} #{pa.name} vs #{pb.name}"
+				# echo "diff för #{a} #{b}: pag=#{pa.group} pbg=#{pb.group} pags=#{pa.groupSize} pbgs=#{pb.groupSize}  par=#{pa.rank} pbr=#{pb.rank} d0=#{d0} d1=#{d1} d2=#{d2} diff=#{diff} #{pa.name} vs #{pb.name}"
 
 				cost = 99999 - diff
 				arr.push [a, b, cost]
@@ -678,8 +678,8 @@ class Tournament
 		arr
 
 	makeEdges : (iBye) -> # iBye är ett id eller -1
-		if SWISS then return makeEdges_SWISS iBye
-		if FAIRPAIR then return makeEdges_FAIRPAIR iBye
+		if SWISS then return @makeEdges_SWISS iBye
+		if FAIRPAIR then return @makeEdges_FAIRPAIR iBye
 
 	findSolution : (edges) ->
 		edmonds = new Edmonds edges
