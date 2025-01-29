@@ -5,8 +5,8 @@ import { Edmonds } from './blossom.js'
 range = _.range
 echo = console.log
 
-FAIRPAIR = false
-SWISS = true # https://arxiv.org/html/2112.10522v2 Swiss using Blossom
+FAIRPAIR = true
+SWISS = false # https://arxiv.org/html/2112.10522v2 Swiss using Blossom
 
 BYE = -1
 PAUSE = -2
@@ -213,26 +213,17 @@ class Player
 		t = span @prettyRes(r), "class=" + @prettyCol2 r
 		td s + t
 
-matrix = (i) ->
-	res = Array(playersByID.length).fill('•') 
-	res[i] = '*'
-	if i == 0 then res[0]='H'
-	if i == playersByID.length-1 then res[i]='L'
-	pi = playersByID[i]
-	for r in range pi.opp.length
-		res[pi.opp[r]] = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r]
-	res.join "   "
-
 class Page 
 	constructor : ->
 	makeHeader : ->
 		isoDate = new Date().toLocaleString('sv-se',{hour12:false}).replace(',','')
 		s = ""
-		s += td "Rond #{tournament.round}", 'style="border:none; width:33%; text-align:left"'
-		s += td tournament.title,           'style="border:none; width:33%; text-align:center"'
-		s += td isoDate,                    'style="border:none; width:33%; text-align:right"'
+		s += td "Rond #{tournament.round}",      'style="border:none; width:33%; text-align:left"'
+		s += td tournament.title,                'style="border:none; width:33%; text-align:center"'
+		s += td tournament.type + ' ' + isoDate, 'style="border:none; width:33%; text-align:right"'
 		header = document.getElementById 'header'
 		header.innerHTML = table tr(s), 'style="width: 100%; font-weight: bold"'
+
 	moveFocus : (next) ->
 		@current = next
 		focusableArray = document.querySelectorAll('[tabindex]')
@@ -334,7 +325,6 @@ class PageTables extends Page
 				q.res[r] = snart[event.key]
 				cell.innerHTML = {"0":"0 - 1", ' ':"½ - ½", "1": "1 - 0"}[event.key] # p.result r,index-1
 				currentPage.moveFocus index + 1
-
 
 class PageStandings extends Page
 	constructor : -> 
@@ -464,6 +454,7 @@ class Tournament
 		playersByScore = _.clone playersByID
 		@tables = []
 		@round = 0
+		@type = if SWISS then 'Schweizer' else 'FairPair'
 
 		echo 'playersByScore', playersByScore
 
@@ -498,7 +489,7 @@ class Tournament
 		
 		echo 'playersByID',playersByID
 		for i in range playersByID.length
-			echo matrix i
+			echo @matrix i
 
 		currentPage.makeHTML()
 		true
@@ -669,13 +660,28 @@ class Tournament
 					d2 = Math.abs pa.rank - pb.rank
 
 				diff = 10000 * d0 + 100 * d1 + d2 ** 1.01
-				# echo "diff för #{a} #{b}: pag=#{pa.group} pbg=#{pb.group} pags=#{pa.groupSize} pbgs=#{pb.groupSize}  par=#{pa.rank} pbr=#{pb.rank} d0=#{d0} d1=#{d1} d2=#{d2} diff=#{diff} #{pa.name} vs #{pb.name}"
+				# diff = 10000 * d0 + d1 + 100 * d2 # ** 1.01
+				#echo "#{a} #{b}: pag=#{pa.group} pbg=#{pb.group} pags=#{pa.groupSize} pbgs=#{pb.groupSize}  par=#{pa.rank} pbr=#{pb.rank} d0=#{d0} d1=#{d1} d2=#{d2} diff=#{diff} #{pa.name} vs #{pb.name}"
 
-				cost = 99999 - diff
+				cost = 99999 - diff # ** 1.01
 				arr.push [a, b, cost]
 
 		echo 'edges',arr
 		arr
+	
+	matrix : (i) ->
+		n = playersByID.length
+		res = Array(n).fill('•')
+		res[i] = '*'
+		if i == 0   then res[0]='H'
+		if i == n-1 then res[i]='L'
+		pi = playersByID[i]
+		for r in range pi.opp.length
+			res[pi.opp[r]] = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r]
+		if n > 120 then return res.join ""
+		if n >  70 then return res.join " "
+		if n >  40 then return res.join "  "
+		res.join "   "
 
 	makeEdges : (iBye) -> # iBye är ett id eller -1
 		if SWISS then return @makeEdges_SWISS iBye
@@ -686,7 +692,10 @@ class Tournament
 		edmonds.maxWeightMatching edges
 
 	sort : -> playersByScore.sort (a,b) ->
-		if SWISS then return b.score() - a.score()
+		if SWISS
+			diff = b.score() - a.score()
+			# if diff == 0 then diff = b.elo - a.elo
+			return diff
 		if FAIRPAIR then return b.performance() - a.performance()
 
 	handleCol : (pi,pa,flag) ->

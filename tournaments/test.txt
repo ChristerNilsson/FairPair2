@@ -1,0 +1,21 @@
+TITLE=Test
+DATE=2025-01-27
+ROUND=0
+TPP=30
+PPP=60
+PAUSED=
+
+1822!Zunrong
+1702!Gunnari
+1701!Nordenfur
+1682!Bornhede
+1645!Schmalholz
+1606!Kressner
+1603!Sun Åslund
+1597!Ekbäck
+1593!Therstam
+1572!Wermlöw
+1571!Wei
+1556!Sharma
+1512!Duperray
+1421!Wåhl
