@@ -19,7 +19,7 @@ ID ELO  NAMN
 12 1556!Sharma  
 13 1512!Duperray  
 14 1421!Wåhl  
-
+  
 Första ronden lottar alla tre samma.
  1 -  8  0-1
  9 -  2  remi
