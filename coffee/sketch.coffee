@@ -5,8 +5,7 @@ import { Edmonds } from './blossom.js'
 range = _.range
 echo = console.log
 
-FAIRPAIR = true
-SWISS = false # https://arxiv.org/html/2112.10522v2 Swiss using Blossom
+# https://arxiv.org/html/2112.10522v2 Swiss using Blossom
 
 BYE = -1
 PAUSE = -2
@@ -15,10 +14,10 @@ SEPARATOR = '!'
 KEYWORDS = {}
 KEYWORDS.TITLE = 'text'
 KEYWORDS.DATE = 'text'
+KEYWORDS.TYPE = 'FairPair or Swiss'
 KEYWORDS.ROUND = 'integer'
+KEYWORDS.ROUNDS = 'integer'
 KEYWORDS.PAUSED = '!-separated integers'
-KEYWORDS.TPP = 'integer (Tables Per Page, default: 30)'
-KEYWORDS.PPP = 'integer (Players Per Page, default: 60)'
 
 g = {}
 
@@ -36,10 +35,12 @@ tr    = (s,attrs="") -> "<tr #{attrs}>#{s}</tr>\n"
 td    = (s,attrs="") -> "<td #{attrs}>#{s}</td>"
 th    = (s,attrs="") -> "<th #{attrs}>#{s}</th>"
 
-seed = 0
-random = -> (((Math.sin(seed++)/2+0.5)*10000)%100)/100
+# seed = 0
+# random = -> (((Math.sin(seed++)/2+0.5)*10000)%100)/100
 
-header    = document.getElementById 'header'
+header = document.getElementById 'header'
+
+isoDate = -> new Date().toLocaleString('sv-se',{hour12:false}).replace(',','')
 
 makePairs = (solution) ->
 	res = []
@@ -229,11 +230,10 @@ class Player
 class Page 
 	constructor : ->
 	makeHeader : ->
-		isoDate = new Date().toLocaleString('sv-se',{hour12:false}).replace(',','')
 		s = ""
-		s += td "Rond #{tournament.round}",      'style="border:none; width:33%; text-align:left"'
-		s += td tournament.title,                'style="border:none; width:33%; text-align:center"'
-		s += td tournament.type + ' ' + isoDate, 'style="border:none; width:33%; text-align:right"'
+		s += td "Rond #{tournament.round} av #{tournament.rounds}", 'style="border:none; width:33%; text-align:left"'
+		s += td tournament.title,                                   'style="border:none; width:33%; text-align:center"'
+		s += td tournament.type + ' ' + isoDate(),                  'style="border:none; width:33%; text-align:right"'
 		header = document.getElementById 'header'
 		header.innerHTML = table tr(s), 'style="width: 100%; font-weight: bold"'
 
@@ -469,11 +469,11 @@ class PageStandings extends Page
 
 class Tournament
 	constructor : (filename, data) ->
+		@round = 0
+		@type = 'FairPair'
 		@fetchData filename, data
 		playersByScore = _.clone playersByID
 		@tables = []
-		@round = 0
-		@type = if SWISS then 'Schweizer' else 'FairPair'
 
 		echo 'playersByScore', playersByScore
 
@@ -485,11 +485,11 @@ class Tournament
 
 	makeTournament : ->
 		res = []
-		res.push "ROUND:" + @round
 		res.push "TITLE:" + @title
-		res.push "DATE:" + @datum
-		res.push "TPP:" + @tpp
-		res.push "PPP:" + @ppp
+		res.push "DATE:" + @date
+		res.push "TYPE:" + @type
+		res.push "ROUND:" + @round
+		res.push "ROUNDS:" + @rounds
 		res.push "PAUSED:" + @makePaused()
 		res.push ""
 		res.push @makePlayers()
@@ -511,7 +511,7 @@ class Tournament
 			if not p.check() then return false
 
 		@virgin = false
-		@downloadFile @makeTournament(), "#{@filename}-R#{@round}.txt"
+		@downloadFile @makeTournament(), "#{@filename}-R#{@round}-#{isoDate().replace(':','h').substring(0,16)}.txt"
 
 		echo ""
 		echo "Lottning av rond #{@round} ====================================================="
@@ -525,14 +525,14 @@ class Tournament
 
 		echo 'tables',@tables
 		# paret med högst elo sitter på bord 1
-		if FAIRPAIR 
+		if @type == 'FairPair' 
 			@tables.sort (a,b)-> 
 				a0 = playersByID[a[0]].elo
 				a1 = playersByID[a[1]].elo
 				b0 = playersByID[b[0]].elo
 				b1 = playersByID[b[1]].elo
 				b0 + b1 - a0 - a1
-		if SWISS
+		if @type == 'Swiss'
 			@tables.sort (a,b)-> 
 				a0 = playersByID[a[0]].score()
 				a1 = playersByID[a[1]].score()
@@ -562,9 +562,9 @@ class Tournament
 		hash.PLAYERS = []
 		hash.TITLE = ''
 		hash.DATE = ''
+		hash.TYPE = 'FairPair' # or Swiss
 		hash.ROUND = 0
-		hash.TPP = 30
-		hash.PPP = 60
+		hash.ROUNDS = 10
 		hash.PAUSED = ""
 
 		for line,nr in data
@@ -594,10 +594,10 @@ class Tournament
 				hash.PLAYERS.push arr
 		@players = []
 		@title = hash.TITLE
-		@datum = hash.DATE
+		@date = hash.DATE
+		@type = hash.TYPE
 		@round = parseInt hash.ROUND
-		@tpp = parseInt hash.TPP # Tables Per Page
-		@ppp = parseInt hash.PPP # Players Per Page
+		@rounds = parseInt hash.ROUNDS
 		@paused = hash.PAUSED # list of zero based ids
 
 		players = hash.PLAYERS
@@ -741,19 +741,20 @@ class Tournament
 		res.join "   "
 
 	makeEdges : (iBye) -> # iBye är ett id eller -1
-		if SWISS then return @makeEdges_SWISS iBye
-		if FAIRPAIR then return @makeEdges_FAIRPAIR iBye
+		if @type == 'Swiss' then return @makeEdges_SWISS iBye
+		if @type == 'FairPair' then return @makeEdges_FAIRPAIR iBye
 
 	findSolution : (edges) ->
 		edmonds = new Edmonds edges
 		edmonds.maxWeightMatching edges
 
-	sort : -> playersByScore.sort (a,b) ->
-		if SWISS
+	sort : -> playersByScore.sort (a,b) =>
+		echo '@type', @type
+		if @type == 'Swiss'
 			diff = b.score() - a.score()
-			# if diff == 0 then diff = b.elo - a.elo
+			if diff == 0 then diff = b.elo - a.elo
 			return diff
-		if FAIRPAIR then return b.performance() - a.performance()
+		if @type == 'FairPair' then return b.performance() - a.performance()
 
 	handleCol : (pi,pa,flag) ->
 		if pi.col.length == 0
@@ -786,13 +787,13 @@ class Tournament
 						pi.col.push 1
 						pa.col.push -1
 
-	handleRes : (pi,pa) ->
-		z = random()
-		[si,sa] = [1,1]
-		if z < 0.45 then [si,sa] = [2,0]
-		if z > 0.55 then [si,sa] = [0,2]
-		pi.res.push si.toString()
-		pa.res.push sa.toString()
+	# handleRes : (pi,pa) ->
+	# 	z = random()
+	# 	[si,sa] = [1,1]
+	# 	if z < 0.45 then [si,sa] = [2,0]
+	# 	if z > 0.55 then [si,sa] = [0,2]
+	# 	pi.res.push si.toString()
+	# 	pa.res.push sa.toString()
 
 	# uppdaterar opp och col
 	makeOppColRes : (pairs, flag=false) ->
@@ -825,9 +826,9 @@ class Tournament
 data = """
 TITLE:Senior Stockholm
 DATE:2025-01-19
+TYPE:FairPair
 ROUND:0
-TPP:30
-PPP:60
+ROUNDS:4
 PAUSED:
 
 1825!JOHANSSON Lennart
