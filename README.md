@@ -4,7 +4,7 @@ FairPair 2 is a major rewrite of FairPair 1
 
 * Only one page is used
 * Performance Rating with extrapolation (Magnus Karlsson) for 0% and 100% is used
-
+* Pure HTML and Javascript
 
 ## Advantages with FairPair
 

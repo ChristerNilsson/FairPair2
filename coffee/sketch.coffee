@@ -10,6 +10,7 @@ SWISS = false # https://arxiv.org/html/2112.10522v2 Swiss using Blossom
 
 BYE = -1
 PAUSE = -2
+SEPARATOR = '!'
 
 KEYWORDS = {}
 KEYWORDS.TITLE = 'text'
@@ -120,11 +121,11 @@ class Player
 	read : (player) ->
 		@elo = parseInt player[0]
 		@name = player[1]
+		if player.length < 3 then return
+		ocrs = player.slice 2
 		@opp = []
 		@col = []
 		@res = []
-		if player.length < 3 then return
-		ocrs = player.slice 2
 		for ocr in ocrs
 			if 'w' in ocr then col='w'
 			if 'b' in ocr then col='b'
@@ -132,15 +133,27 @@ class Player
 			arr = ocr.split col
 			@opp.push parseInt arr[0]
 			@col.push {w:1, b:-1}[col]
-			if arr.length == 2 and arr[1].length == 1 then @res.push arr[1]
+			if arr.length == 2 and arr[1].length == 1 then @res.push {'0':0, '=':1, '1':2}[arr[1]]
 
-	write : -> # 1234!Christer!12w0!23b1!14w2   Elo:1234 Name:Christer opponent:23 color:b result:1
+	#         opp  col   res
+	# internt  23  1 -1  0 1 2
+	# externt  23  w  b  0 = 1
+
+	write : -> # 1631!Christer!12w0!23b=!14w1   Elo:1631 Name:Christer opponent:23 color:b result:remi
 		res = []
 		res.push @elo
 		res.push @name
 		r = @opp.length
 		if r == 0 then return res.join SEPARATOR
-		ocr = ("#{@opp[i]}#{@col[i]}#{if i < r then @res[i] else ''}" for i in range r)
+		echo @opp,@col,@res
+		ocr = []
+		for i in range r
+			s = ""
+			s += @opp[i] 
+			s += {'1':'w','-1':'b'}[@col[i]]
+			s += "0=1"[@res[i]]
+			echo 's',s
+			ocr.push s
 		res.push ocr.join SEPARATOR
 		res.join SEPARATOR
 
@@ -410,7 +423,13 @@ class PageStandings extends Page
 		@app.innerHTML = table t,'style="border:none"'
 
 	handleKeyDown : (event) -> # Enkelrond
-		if event.key in [' ','ArrowDown','ArrowUp'] then event.preventDefault()
+
+		if event.ctrlKey && event.shiftKey && event.key.toLowerCase() == "i"
+			event.preventDefault()
+			return
+
+		echo 'handleKeyDown',event.key
+		# if event.key in [' ','ArrowDown','ArrowUp'] then event.preventDefault()
 
 		if event.key in ['ArrowLeft','ArrowRight']
 			currentPage = pageTables
@@ -458,9 +477,46 @@ class Tournament
 
 		echo 'playersByScore', playersByScore
 
+	makePaused : -> @paused.join SEPARATOR # (12!34)
+
+	makePlayers : ->
+		players = (p.write() for p in playersByID)
+		players.join "\n"
+
+	makeTournament : ->
+		res = []
+		res.push "ROUND:" + @round
+		res.push "TITLE:" + @title
+		res.push "DATE:" + @datum
+		res.push "TPP:" + @tpp
+		res.push "PPP:" + @ppp
+		res.push "PAUSED:" + @makePaused()
+		res.push ""
+		res.push @makePlayers()
+		res.join '\n'
+		
+	downloadFile : (txt,filename) ->
+		blob = new Blob [txt], { type: 'text/plain' }
+		url = URL.createObjectURL blob
+		a = document.createElement 'a'
+		a.href = url
+		a.download = filename
+		document.body.appendChild a
+		a.click()
+		document.body.removeChild a
+		URL.revokeObjectURL url
+
 	pair : ->
 		for p in playersByID
 			if not p.check() then return false
+
+		@virgin = false
+		@downloadFile @makeTournament(), "#{@filename}-R#{@round}.txt"
+
+		echo ""
+		echo "Lottning av rond #{@round} ====================================================="
+		document.title = "Round #{@round+1}"
+
 		solution = @findSolution @makeEdges -1
 		@tables = makePairs solution
 
@@ -511,10 +567,10 @@ class Tournament
 		hash.PPP = 60
 		hash.PAUSED = ""
 
-		for line,nr in data	
+		for line,nr in data
 			line = line.trim()
 			if line.length == 0 then continue
-			arr = line.split '='
+			arr = line.split ':'
 			if arr.length == 2
 				if arr[0] not of KEYWORDS
 					helpText = ("    #{key}: #{value}" for key,value of KEYWORDS).join '\n'
@@ -532,8 +588,8 @@ class Tournament
 					return
 				for i in range 2,arr.length
 					item = arr[i]
-					if not /^-?\d+(w|_|b)[0-2]$/.test item
-						alert "#{item}\n in line #{nr+1}\n must follow the format <number> <color> <result>\n  where color is one of w,b or _\n  and result is one of 0, 1 or 2"
+					if not /^-?\d+(w|_|b)[0=1]$/.test item
+						alert "#{item}\n in line #{nr+1}\n must follow the format <number> <color> <result>\n  where color is one of w,b or _\n  and result is one of 0, = or 1"
 						return
 				hash.PLAYERS.push arr
 		@players = []
@@ -554,6 +610,7 @@ class Tournament
 		playersByID = []
 		for i in range g.N
 			player = new Player i
+			echo players[i]
 			player.read players[i]
 			playersByID.push player
 
@@ -766,12 +823,12 @@ class Tournament
 		res
 			
 data = """
-TITLE=Senior Stockholm
-DATE=2025-01-19
-ROUND=0
-TPP=30
-PPP=60
-PAUSED=
+TITLE:Senior Stockholm
+DATE:2025-01-19
+ROUND:0
+TPP:30
+PPP:60
+PAUSED:
 
 1825!JOHANSSON Lennart
 1697!BJÖRKDAHL Göran
