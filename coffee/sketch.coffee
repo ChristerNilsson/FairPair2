@@ -496,6 +496,8 @@ class Tournament
 		res.join '\n'
 		
 	downloadFile : (txt,filename) ->
+		# filename = filename.substring 0,@title.length
+		echo 'downloadFile',filename
 		blob = new Blob [txt], { type: 'text/plain' }
 		url = URL.createObjectURL blob
 		a = document.createElement 'a'
@@ -511,7 +513,7 @@ class Tournament
 			if not p.check() then return false
 
 		@virgin = false
-		@downloadFile @makeTournament(), "#{@filename}-R#{@round}-#{isoDate().replace(':','h').substring(0,16)}.txt"
+		@downloadFile @makeTournament(), "#{@title}-R#{@round}-#{isoDate().replace(':','h').substring(0,16)}.txt"
 
 		echo ""
 		echo "Lottning av rond #{@round} ====================================================="
@@ -551,7 +553,7 @@ class Tournament
 		true
 
 	fetchData : (filename, data) ->
-		# randomSeed 99
+
 		@filename = filename.replaceAll ".txt",""
 
 		data = data.split '\n'
@@ -824,7 +826,7 @@ class Tournament
 		res
 			
 data = """
-TITLE:Senior Stockholm
+TITLE:Demo
 DATE:2025-01-19
 TYPE:FairPair
 ROUND:0
@@ -858,5 +860,4 @@ currentPage.makeHTML()
 currentPage.moveFocus 0
 
 window.addEventListener 'keydown', (event) ->
-	# echo 'keydown',currentPage.klass
 	currentPage.handleKeyDown event
