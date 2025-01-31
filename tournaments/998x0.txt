@@ -1,5 +1,5 @@
-TITLE=Tyresö Open 2024
-DATE=2024-05-03
+TITLE:Tyresö Open 2024
+DATE:2024-05-03
 1400!ASP Adam-Kalle
 1401!BJöRK Adam-Kalle
 1402!EN Adam-Kalle

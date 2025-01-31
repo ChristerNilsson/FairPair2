@@ -1,6 +1,6 @@
-TITLE=Tyresö Open 2024
-DATE=2023-11-25
-ROUND=10
+TITLE:Tyresö Open 2024
+DATE:2023-11-25
+ROUND:10
 2416!Hampus Sörensen!1w0!2b2!3w1!6b2!4w0!5b1!8w2!10b1!7w2!9b1
 2416!Hampus Sörensen!0b2!3w0!2w1!10b2!5w0!4b0!6w0!8b2!9w0!7b1
 2413!Michael Wiedenkeller!3b2!0w0!1b1!4w1!6w2!8b2!5w0!12b2!10w2!11b1

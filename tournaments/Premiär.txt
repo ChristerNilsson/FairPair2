@@ -1,9 +1,9 @@
-ROUND=0
-TITLE=Premiär
-DATE=2024-09-25
-TPP=30
-PPP=60
-PAUSED=
+ROUND:0
+TITLE:Premiär
+DATE:2024-09-25
+TPP:30
+PPP:60
+PAUSED:
 
 1720!Dan Israel
 1713!Dimitri Konstantinov

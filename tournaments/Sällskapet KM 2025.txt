@@ -1,8 +1,10 @@
-TITLE:bbp60
+TITLE:Sällskapet KM 2025
 DATE:2025-01-31
-ROUND:14
+ROUND:1
 ROUNDS:16
 PAUSED:
+
+
 
 2720!Test01 Player01!31 b 1    !16 w 1    !12 b 1    ! 6 w 1    ! 7 b 0    ! 4 w 1    ! 3 b 0    !14 w 1    !10 w 1    ! 8 b 1    ! 5 w 1    !11 b 0    !17 w =    ! 2 b 1
 2701!Test02 Player02!32 w 1    !17 b 0    !29 w 1    !15 b =    !27 w 1    !13 b 1    ! 8 w =    !11 b 0    !20 w 1    ! 7 b =    !10 w =    !12 b =    ! 9 w 1    ! 1 w 0

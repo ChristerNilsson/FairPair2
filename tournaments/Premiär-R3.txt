@@ -1,9 +1,7 @@
-ROUND=3
-TITLE=Premiär
-DATE=2024-09-25
-TPP=30
-PPP=60
-PAUSED=
+ROUND:3
+TITLE:Premiär
+DATE:2024-09-25
+PAUSED:
 
 1720!Dan Israel!1w2!2b0!3w2
 1713!Dimitri Konstantinov!0b0!3w2!2w0
