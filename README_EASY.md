@@ -2,21 +2,31 @@
 
 ## Öva med demo-turneringen
 
-1. Tryck på **Enter** för att lotta första ronden
-2. Mata in resultat med **1**, **mellanslag** eller **0**
-3. När alla resultat är inmatade: Gå tillbaka till punkt 1.
-
-## Fler möjligheter
-
-* Zooma in och ut med **ctrl+** och **ctrl-**
-* Skriv ut aktuell sida med **ctrl-p**
-* Byt mellan Bord och Ställning med **vänsterpil** eller **högerpil**
+|Tangent|Betydelse|
+|:-:|-|
+|**Enter**|Lotta nästa rond|
+|**1**|Vinst|
+|**Space**|Remi|
+|**0**|Förlust|
+|+|Ospelad vinst|
+|-|Ospelad förlust|
+|?|Uppskjutet parti|
+|Delete|Ta bort ett resultat|
+|Pause|Parkera en spelare|
+|a-ö|Sök efter första bokstaven i namnet, framåt|
+|A-Ö|Sök efter första bokstaven i namnet, bakåt|
+|ctrl +|Zooma in|
+|ctrl -|Zooma ut|
+|ctrl p|Skriv ut|
+|Vänsterpil|Växla mellan Bord och Ställning|
+|Högerpil|Växla mellan Bord och Ställning|
 
 ## Skapa en egen turnering
 
-* Har du lottat demo-turneringen, bör det finnas en fil i "Nerladdningar" som du kan utgå ifrån
-* Redigera denna textfil med t ex Notepad
-* Hämta turneringen med **Välj fil**
+* Har du lottat demo-turneringen, bör det finnas en fil med ungefärligt namn **Demo-R0-2025-01-31 12h34.txt** i "Nerladdningar" som du kan utgå ifrån
+* Flytta denna textfil till din egen katalog och byt namn på den.
+* Redigera textfilen med t ex Notepad och lägg in spelarna med elo-tal och namn.
+* Läs därefter in din egen turnering med **Välj fil**
 
 ## Backup
 
@@ -28,3 +38,19 @@
 * Skriv ut bordslistan efter varje lottning
 	* Det går snabbt att knappa in resultaten igen vid strömavbrott
 	* Det går även bra utan utskrifter.
+
+## Parametrar
+
+|Parameter|Betydelse|
+|-|-|
+|TITLE|Turneringens namn|
+|DATE|Turneringens startdatum|
+|TYPE|FairPair eller Swiss|
+|ROUND|0 initialt|
+|ROUNDS|antal ronder totalt|
+|PAUSED|id för pausade spelare separerade med utropstecken|
+
+## Spelare
+
+2340!Klas Andersson  
+2345!Bengt Svensson  

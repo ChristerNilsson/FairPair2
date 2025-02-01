@@ -42,26 +42,28 @@
 
 			.ul {
 				position: absolute;
-				font-size: 12px;
+				font-size: 10px;
 				top: 0px;
 				left: 1px;
 			}
 			.ur {
 				position: absolute;
-				font-size: 12px;
+				font-size: 10px;
 				top: 0px;
 				right: 1px;
 			}
 
 			.ll {
 				position: absolute;
-				bottom: -6px; 
+				font-size: 16px;
+				bottom: -3px; 
 				left: 50%;
 				transform: translateX(-50%); 
 			}
 			.lr {
 				position: absolute;
-				bottom: -6px; 
+				font-size: 18px;
+				bottom: -3px; 
 				left: 50%;
 				transform: translateX(-50%); 
 			}
@@ -74,8 +76,6 @@
 	<body>
 		<input id="input" type="file" accept=".txt" onchange="handleFileChange(event)">
 		<div id="header"></div>
-		<!-- <div id="standings"></div> -->
-		<!-- <div id="tables"></div> -->
 		<div id="app"></div>
 
 		<script type="module">

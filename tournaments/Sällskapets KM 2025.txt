@@ -1,0 +1,68 @@
+TITLE: Sällskapets KM 2025
+DATE: 2025-01-21
+ROUND: 0
+ROUNDS: 11
+TYPE:Swiss
+
+2345!	Eric Thörn			
+2301!	Carl Cederstam						
+2271!	Lavinia Valcu		
+2241!	Felix Tuomainen						
+2154!	Melvin Ral Lustig	
+2110!	Mattias Sollerman					
+2091!	Gunnar Hedin		
+2071!	Leo Brodin							
+2061!	Lo Ljungros			
+2058!	Nils Carlsson						
+2046!	Herman Enholm		
+2004!	Filip Dingertz						
+2000!	Bengt Sjödin						
+2000!	Anders Ivarsson		
+1968!	Peter Lindblom		
+1967!	Carina Wickström					
+1956!	Max Larsson			
+1954!	Khaschuluu Sergelenbaatar			
+1954!	Klas Britse			
+1938!	Gustav Dingertz						
+1922!	Mikael Helin		
+1920!	Ture Alm							
+1903!	Markus Mäkelä		
+1902!	Tobias Glimmerfors					
+1901!	Jesper Borin		
+1898!	Christofer Hahne					
+1892!	Rune Evertsson		
+1875!	Morris Bergqvist	
+1874!	Jakob Fahlman						
+1853!	Hugo Hardwick						
+1847!	Viktor Brolin		
+1835!	Simon Lindström						
+1832!	Jessica Moysen		
+1830!	Inge Bhatt								
+1814!	Kasper Hörnkvist	
+1808!	Dick Viklund						
+1807!	Björn Gustafsson	
+1801!	Bor Stevense						
+1795!	Nils Molin			
+1791!	Bodi Karlman						
+1791!	Peter Hägg			
+1786!	William Jansson							
+1770!	Karam Masoudi		
+1759!	Fredrik Sandström					
+1752!	Björn Knöppel		
+1744!	Wilmer Löfgren		
+1743!	Jacob Hanini						
+1714!	Friedemann Stumpf					
+1701!	Anton Nordenfur		
+1690!	Zana Avci							
+1671!	Adam Horvath		
+1668!	Loup Jouandet-Dahlen				
+1643!	Tuve Gustavsson		
+1631!	Christer Nilsson					
+1585!	Arne Sikström		
+1578!	Erik Nyberg Bååth					
+1560!	Emmanouil Liolis	
+1506!	Jovan Nikander						
+1427!	Daniel Moore		
+1417!	Kerstin Liljemark						
+1400!	Daniel Lejonstad				
+1400!	Axel Eklund			

@@ -19,7 +19,7 @@ BYE = -1
 PAUSE = -2
 SEPARATOR = '!'
 
-FIRST = 0
+FIRST = 1
 
 KEYWORDS = {}
 KEYWORDS.TITLE = 'text'
@@ -78,6 +78,7 @@ export handleFile = (filename,data) ->
 	echo data
 	tournament = new Tournament filename,data
 	pageStandings.makeHTML()
+	pageStandings.makeHeader()
 
 sum = (s) ->
 	result = 0
@@ -110,24 +111,33 @@ class Player
 		@error = false
 		# @opp är en lista med heltal
 		# @col är en sträng med w eller b, ett tecken för varje rond
-		# @res är en sträng med 0=1+- # + och - innebär att partiet ej spelats
+		# @res är en sträng med 0=1+-?  # + och - innebär att partiet ej spelats
 
-	check : -> # Kontrollerar att resultaten är konsistenta
-		return true
-		r = @opp.length - 1
-		if r == -1 then return true
-		q = playersByID[@opp[r]]
-		if @res.length-1 < r 
-			echo "Resultat saknas för #{@name}"
-			return false
-		if q.res.length-1 < r 
-			echo "Resultat saknas för #{q.name}"
-			return false
-		a = @res[r] / 2
-		b = q.res[r] / 2
-		if a + b == 1 then return true
-		echo "Felaktigt resultat för #{@name} mot #{q.name}: #{a} - #{b}"
-		false
+	check : -> # Kontrollera att opponent, färger och resultat är konsistenta
+		
+		colors = 'bw wb'.split ' '
+		results = '01 10 == +- -+ ??'.split ' '
+
+		for r in range @opp.length
+			p = @
+			q = playersByID[@opp[r]]
+
+			if p.res.length-1 < r then return "Resultat saknas för #{p.name}"
+			if q.res.length-1 < r then return "Resultat saknas för #{q.name}"
+
+			a = p.opp[r]
+			b = q.opp[r]
+			if b != p.id or a != q.id then return "Opponenter stämmer ej för #{p.name} och #{q.name}"
+
+			a = p.col[r]
+			b = q.col[r]
+			if a+b not in colors then return "Felaktiga färger för #{p.name} mot #{q.name}: #{a} vs #{b}"
+
+			a = p.res[r]
+			b = q.res[r]
+			if a+b not in results then return "Felaktigt resultat för #{p.name} mot #{q.name}: #{a} vs #{b}"
+
+		""
 
 	balans : ->
 		result = 0
@@ -212,8 +222,6 @@ class Player
 		b + b - a
 
 	performance : ->
-		echo 'performance'
-		# pp = @score()
 		hash = {'0':0, '=': 0.5, '1':1}
 		elos = []
 		if @res.length == 0 then return 0
@@ -235,11 +243,7 @@ class Player
 
 		@performance_rating elos,pp
 
-	prettyRes : (r) -> 
-		if @res[r] is undefined then return ""
-		@res[r]
-		#("0½1"[ch] for ch in @res[r]).join "" # "12" => "½1"
-
+	prettyRes : (r) -> if @res[r] is undefined then "" else	@res[r]
 	prettyCol : (r) -> if @col[r] == 'b' then "ul" else "ur"  # 1 => "black"
 	prettyCol2: (r) -> if @col[r] == 'w' then "lr" else "ll"  # 1 => "white"
 
@@ -248,7 +252,7 @@ class Player
 		t = span @prettyRes(r) , "class=" + @prettyCol2 r
 		td s + t
 
-class Page 
+class Page
 	constructor : ->
 	makeHeader : ->
 		s = ""
@@ -267,7 +271,7 @@ class Page
 		focusableArray[@current].focus()
 
 class PageTables extends Page
-	constructor : -> 
+	constructor : ->
 		super()
 		@app = document.getElementById 'app'
 		@klass = 'PageTables'
@@ -319,6 +323,8 @@ class PageTables extends Page
 		# echo 'totalDiff',totalDiff
 		t = tr(@headers(R)) + t
 		@app.innerHTML = table t,'style="border:none"'
+		@moveFocus 0
+
 
 	handleKeyDown : (event) ->
 		# echo 'handleKeyDown Tables',event.key
@@ -446,6 +452,7 @@ class PageStandings extends Page
 
 		t = tr(@headers(R)) + t
 		@app.innerHTML = table t,'style="border:none"'
+		@moveFocus 0
 
 	handleKeyDown : (event) -> # Enkelrond
 
@@ -534,8 +541,6 @@ class Tournament
 		URL.revokeObjectURL url
 
 	pair : ->
-		for p in playersByID
-			if not p.check() then return false
 
 		@virgin = false
 		@downloadFile @makeTournament(), "#{@title}-R#{@round}-#{isoDate()}.txt"
@@ -555,35 +560,22 @@ class Tournament
 		if @type == 'FairPair' 
 			arr = []
 			echo @tables
-			for [a,b] in @tables
-				a0 = playersByID[a].performance()
-				b0 = playersByID[b].performance()
-				arr.push [Math.max(a0,b0), Math.min(a0,b0), a, b]
-			arr.sort (a,b) ->
-				diff = b[0] - a[0]
-				if diff == 0 then return b[1] - a[1]
-				diff
-
+			for [c,d] in @tables
+				a = playersByID[c].performance()
+				b = playersByID[d].performance()
+				arr.push [Math.max(a,b), Math.min(a,b), c, d]
+			arr.sort (a,b) -> if b[0] == a[0] then b[1] - a[1] else b[0] - a[0]
 			@tables = ([c,d] for [a,b,c,d] in arr)
 
-			# @tables.sort (a,b) ->
-			# 	a0 = playersByID[a[0]].performance()
-			# 	a1 = playersByID[a[1]].performance()
-			# 	b0 = playersByID[b[0]].performance()
-			# 	b1 = playersByID[b[1]].performance()
-			# 	echo 'performance 4'
-			# 	amax = Math.max(a0,a1)
-			# 	bmax = Math.max(b0,b1)
-			# 	amin = Math.min(a0,a1)
-			# 	bmin = Math.min(b0,b1)
-			# 	if amax == bmax then bmin - amin else bmax - amax
 		if @type == 'Swiss'
-			@tables.sort (a,b) ->
-				a0 = playersByID[a[0]].score()
-				a1 = playersByID[a[1]].score()
-				b0 = playersByID[b[0]].score()
-				b1 = playersByID[b[1]].score()
-				b0 + b1 - a0 - a1
+			arr = []
+			for [c,d] in @tables
+				a = playersByID[c].score()
+				b = playersByID[d].score()
+				arr.push [Math.max(a,b), Math.min(a,b), c, d]
+			arr.sort (a,b) -> if b[0] == a[0] then b[1] - a[1] else b[0] - a[0]
+			@tables = ([c,d] for [a,b,c,d] in arr)
+
 		@tables = @makeOppColRes @tables
 		@sort()
 		
@@ -597,11 +589,7 @@ class Tournament
 	fetchData : (filename, data) ->
 
 		@filename = filename.replaceAll ".txt",""
-
-		if @filename == 'bbp60' then FIRST = 1
-
 		data = data.split '\n'
-
 		hash = {}
 
 		# default values
@@ -613,6 +601,7 @@ class Tournament
 		hash.ROUNDS = 10
 		hash.PAUSED = ""
 
+		# Läs in parametrarna först
 		for line,nr in data
 			line = line.trim()
 			if line.length == 0 then continue
@@ -624,7 +613,21 @@ class Tournament
 					alert "#{keyword} in line #{nr+1} is not one of\n#{helpText}"
 					return
 				hash[arr[0]] = arr[1]
-			else 
+
+		@title = hash.TITLE
+		@date = hash.DATE
+		@type = hash.TYPE
+		echo @type
+		@round = parseInt hash.ROUND
+		@rounds = parseInt hash.ROUNDS
+		@paused = hash.PAUSED # list of zero based ids
+
+		# Läs därefter in spelarna
+		for line,nr in data
+			line = line.trim()
+			if line.length == 0 then continue
+			arr = line.split ':'
+			if arr.length == 1
 				if '!' not in line
 					alert "#{line}\n in line #{nr+1}\n must look like\n    2882!CARLSEN Magnus or\n    1601!NILSSON Christer!2w0"
 					return
@@ -637,18 +640,11 @@ class Tournament
 					return
 				for i in range 2,arr.length
 					item = arr[i]
-					if not /^-?\d+(w|b)[0=1+-]$/.test item
-						alert "#{item}\n in line #{nr+1}\n must follow the format <number> <color> <result>\n  where color is one of w,b or _\n  and result is one of 0, = or 1"
+					if not /^-?\d+(w|b)[0=1+-\?]$/.test item
+						alert "#{item}\n in line #{nr+1}\n must follow the format <number> <color> <result>\n  where color is in wb\n  and result is in 0=1+-?"
 						return
-				hash.PLAYERS.push arr
+				hash.PLAYERS.push arr.slice 0, @round + 2
 		@players = []
-		@title = hash.TITLE
-		@date = hash.DATE
-		@type = hash.TYPE
-		@round = parseInt hash.ROUND
-		@rounds = parseInt hash.ROUNDS
-		@paused = hash.PAUSED # list of zero based ids
-
 		players = hash.PLAYERS
 		g.N = players.length
 
@@ -683,18 +679,17 @@ class Tournament
 		for i in range g.N
 			playersByID[i].id = i
 		
-		echo 'playersByID', playersByID 
+		for p in playersByID
+			message = p.check()
+			if message != "" then alert message
 
-		# for p in playersByID
-		# 	echo p.res
-		# 	echo p.col,p.balans()
+		echo 'playersByID', playersByID 
 
 		# extract @pairs from the last round
 		@pairs = []
 		for p in playersByID
 			a = p.id
 			b = _.last p.opp
-			#echo "a,b",a,b
 			if a < b 
 				pa = playersByID[a]
 				pb = playersByID[b]
@@ -712,6 +707,8 @@ class Tournament
 		# @dump 'fetch'
 		
 		@virgin = true
+
+		true
 
 	ok : (a,b) -> a.id != b.id and a.id not in b.opp and Math.abs(a.balans() + b.balans()) <= 1
 
@@ -803,12 +800,9 @@ class Tournament
 		edmonds.maxWeightMatching edges
 
 	sort : -> playersByScore.sort (a,b) =>
-		#echo '@type', @type
-		if @type == 'Swiss'
-			diff = b.score() - a.score()
-			if diff == 0 then diff = b.elo - a.elo
-			return diff
-		if @type == 'FairPair' then return b.performance() - a.performance()
+		if @type == 'Swiss' then diff = b.score() - a.score()
+		if @type == 'FairPair' then diff = b.performance() - a.performance()
+		if diff == 0 then b.elo - a.elo else diff
 
 	handleCol : (pi,pa,flag) ->
 		if pi.col.length == 0
@@ -842,14 +836,6 @@ class Tournament
 						pi.col += 'w'
 						pa.col += 'b'
 
-	# handleRes : (pi,pa) ->
-	# 	z = random()
-	# 	[si,sa] = [1,1]
-	# 	if z < 0.45 then [si,sa] = [2,0]
-	# 	if z > 0.55 then [si,sa] = [0,2]
-	# 	pi.res.push si.toString()
-	# 	pa.res.push sa.toString()
-
 	# uppdaterar opp och col
 	makeOppColRes : (pairs, flag=false) ->
 		bord = 0
@@ -869,7 +855,7 @@ class Tournament
 			pa.opp.push b
 			pb.opp.push a
 
-			@handleCol pa,pb, bord % 2 == 0
+			@handleCol pa,pb, bord % 2 == 1
 
 			# vid lika färgvärden, alternera
 			n = pa.col.length
@@ -885,37 +871,40 @@ ROUND:0
 ROUNDS:4
 PAUSED:
 
-1825!JOHANSSON Lennart  ! 7 b 1
-1697!BJÖRKDAHL Göran    ! 8 w =
-1684!SILINS Peteris     ! 9 w 0
-1681!STOLOV Leonid      !10 b 1
-1644!PETTERSSON Lars-Åke!11 b =
-1598!AIKIO Onni         !12 w 0
-1598!ISRAEL Dan         !13 w 1
-1583!PERSSON Kjell      ! 0 b 0
-1561!LILJESTRÖM Tor     ! 1 b =
-1559!LEHVONEN Jouko     ! 2 w 1
-1539!ANDERSSON Lars Owe ! 3 w 0
-1535!ÅBERG Lars-Erik    ! 4 b =
-1532!ANTONSSON Görgen   ! 5 b 1
-1400!STRÖMBÄCK Henrik   ! 6 w 0
+1825!JOHANSSON Lennart
+1697!BJÖRKDAHL Göran
+1684!SILINS Peteris
+1681!STOLOV Leonid
+1644!PETTERSSON Lars-Åke
+1598!AIKIO Onni
+1598!ISRAEL Dan
+1583!PERSSON Kjell
+1561!LILJESTRÖM Tor
+1559!LEHVONEN Jouko
+1539!ANDERSSON Lars Owe
+1535!ÅBERG Lars-Erik
+1532!ANTONSSON Görgen
+1400!STRÖMBÄCK Henrik
+
 """
 
-# 1825!JOHANSSON Lennart
-# 1697!BJÖRKDAHL Göran
-# 1684!SILINS Peteris
-# 1681!STOLOV Leonid
-# 1644!PETTERSSON Lars-Åke
-# 1598!AIKIO Onni
-# 1598!ISRAEL Dan
-# 1583!PERSSON Kjell
-# 1561!LILJESTRÖM Tor
-# 1559!LEHVONEN Jouko
-# 1539!ANDERSSON Lars Owe
-# 1535!ÅBERG Lars-Erik
-# 1532!ANTONSSON Görgen
-# 1400!STRÖMBÄCK Henrik
+"""
+1825!JOHANSSON Lennart  ! 8 b 1
+1697!BJÖRKDAHL Göran    ! 9 w =
+1684!SILINS Peteris     !10 w 0
+1681!STOLOV Leonid      !11 b 1
+1644!PETTERSSON Lars-Åke!12 b =
+1598!AIKIO Onni         !13 w 0
+1598!ISRAEL Dan         !14 w 1
 
+1583!PERSSON Kjell      ! 1 w 0
+1561!LILJESTRÖM Tor     ! 2 b =
+1559!LEHVONEN Jouko     ! 3 b 1
+1539!ANDERSSON Lars Owe ! 4 w 0
+1535!ÅBERG Lars-Erik    ! 5 w =
+1532!ANTONSSON Görgen   ! 6 b 1
+1400!STRÖMBÄCK Henrik   ! 7 b 0
+"""
 
 pageStandings = new PageStandings()
 pageTables = new PageTables() 
