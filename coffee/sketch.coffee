@@ -446,7 +446,7 @@ class PageStandings extends Page
 
 			# s += td matrix i
 			# echo matrix i
-			s += td "" # * (pause)
+			s += td if p.active then "" else "*"
 			s += td p.average().toFixed 1
 			t += tr s, "tabindex=#{i}"
 
@@ -475,6 +475,13 @@ class PageStandings extends Page
 		p = playersByScore[index]
 		r = p.opp.length-1
 		cell = event.target.children[3+r]
+
+		if event.key == 'Pause'
+			p.active = not p.active
+			echo 'Pause', p.active
+			cell = event.target.children[r+7]
+			cell.innerHTML = if p.active then '' else '*'
+			return
 
 		if event.key == 'Enter'
 			if tournament.pair()
@@ -620,7 +627,7 @@ class Tournament
 		echo @type
 		@round = parseInt hash.ROUND
 		@rounds = parseInt hash.ROUNDS
-		@paused = hash.PAUSED # list of zero based ids
+		@paused = hash.PAUSED # list of one based ids
 
 		# Läs därefter in spelarna
 		for line,nr in data
@@ -869,7 +876,7 @@ DATE:2025-01-19
 TYPE:FairPair
 ROUND:0
 ROUNDS:4
-PAUSED:
+PAUSED:1!2
 
 1825!JOHANSSON Lennart
 1697!BJÖRKDAHL Göran

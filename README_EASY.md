@@ -12,7 +12,7 @@
 |-|Ospelad förlust|
 |?|Uppskjutet parti|
 |Delete|Ta bort ett resultat|
-|Pause|Parkera en spelare|
+|Pause|Inaktivera/aktivera en spelare|
 |a-ö|Sök efter första bokstaven i namnet, framåt|
 |A-Ö|Sök efter första bokstaven i namnet, bakåt|
 |ctrl +|Zooma in|
