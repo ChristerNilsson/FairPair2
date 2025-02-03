@@ -107,7 +107,7 @@ pr = (rs, s, lo=0, hi=4000, r=(lo+hi)/2) -> if hi - lo < 0.001 then r else if s 
 
 class Player
 	constructor : (@elo, @name, @opp=[], @col="", @res="") ->
-		@active = true
+		@active = false
 		@error = false
 		# @opp är en lista med heltal
 		# @col är en sträng med w eller b, ett tecken för varje rond
@@ -446,7 +446,7 @@ class PageStandings extends Page
 
 			# s += td matrix i
 			# echo matrix i
-			s += td if p.active then "" else "*"
+			s += td if p.active then "*" else ""
 			s += td p.average().toFixed 1
 			t += tr s, "tabindex=#{i}"
 
@@ -480,8 +480,15 @@ class PageStandings extends Page
 			p.active = not p.active
 			echo 'Pause', p.active
 			cell = event.target.children[r+7]
-			cell.innerHTML = if p.active then '' else '*'
+			cell.innerHTML = if p.active then '*' else ''
 			return
+
+		if event.key == '*'
+			echo '* detected'
+			active = playersByID[0].active
+			for p in playersByID
+				p.active = not active
+			pageStandings.makeHTML()
 
 		if event.key == 'Enter'
 			if tournament.pair()
@@ -669,6 +676,8 @@ class Tournament
 		if @paused == ""
 			@paused = []
 		else
+			for p in playersByID
+				p.active = true
 			@paused = @paused.split '!'
 			for id in @paused
 				if id != "" then playersByID[id].active = false

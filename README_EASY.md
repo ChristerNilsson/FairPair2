@@ -12,7 +12,8 @@
 |-|Ospelad förlust|
 |?|Uppskjutet parti|
 |Delete|Ta bort ett resultat|
-|Pause|Inaktivera/aktivera en spelare|
+|Pause|aktivera/deaktivera EN spelare|
+|*|aktivera/deaktivera ALLA spelare|
 |a-ö|Sök efter första bokstaven i namnet, framåt|
 |A-Ö|Sök efter första bokstaven i namnet, bakåt|
 |ctrl +|Zooma in|
@@ -20,6 +21,31 @@
 |ctrl p|Skriv ut|
 |Vänsterpil|Växla mellan Bord och Ställning|
 |Högerpil|Växla mellan Bord och Ställning|
+
+## Bordslistan
+
+|kolumn|betydelse|
+|:-:|-|
+|b|Bordsnummer|
+|vit|vits namn|
+|elo|elo för vit|
+|result|partiets resultat|
+|elo|elo för svart|
+|svart|svarts namn|
+|diff|vit elo minus svart elo|
+
+## Ställningslistan
+
+|kolumn|betydelse|
+|:-:|-|
+|id|spelarens nummer|
+|namn|spelarens namn|
+|elo|spelarens elo|
+|pr|total Performance Rating|
+|pp|total PartiPoäng|
+|bf|Bord och Färg i nästa rond|
+|*|*=närvarande|
+|avg|motståndarnas elos medelvärde|
 
 ## Skapa en egen turnering
 
@@ -42,7 +68,7 @@
 ## Parametrar
 
 |Parameter|Betydelse|
-|-|-|
+|:-:|-|
 |TITLE|Turneringens namn|
 |DATE|Turneringens startdatum|
 |TYPE|FairPair eller Swiss|
