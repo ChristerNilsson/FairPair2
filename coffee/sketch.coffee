@@ -107,7 +107,7 @@ pr = (rs, s, lo=0, hi=4000, r=(lo+hi)/2) -> if hi - lo < 0.001 then r else if s 
 
 class Player
 	constructor : (@elo, @name, @opp=[], @col="", @res="") ->
-		@active = false
+		@active = true
 		@error = false
 		# @opp är en lista med heltal
 		# @col är en sträng med w eller b, ett tecken för varje rond
@@ -171,14 +171,17 @@ class Player
 		result.push @name
 		r = @opp.length
 		if r == 0 then return result.join SEPARATOR
-		echo @opp,@col,@res
+		#echo @opp,@col,@res
 		ocr = []
 		for i in range r
 			s = ""
-			s += @opp[i] + FIRST
+			if @opp[i] < 0 
+				s += @opp[i]
+			else
+				s += @opp[i] + FIRST
 			s += @col[i]
 			s += @res[i]
-			echo 's',s
+			#echo 's',s
 			ocr.push s
 		result.push ocr.join SEPARATOR
 		result.join SEPARATOR
@@ -187,20 +190,23 @@ class Player
 		hash = {'0':0, '=': 0.5, '1':1, '+':1, '-':0, '?':0.5}
 		summa = 0
 		if @opp.length == 0 then return 0
-		for i in range @res.length # - 1
+		for i in range @res.length - 1
 			for ch in @res[i]
 				summa += hash[ch]
 		summa
 
 	average : ->
-		summa = 0
+		result = []
 		n = @opp.length - 1
 		if n == -1 then return 0
 		for i in range n
 			opp = @opp[i]
-			p = playersByID[opp]
-			summa += p.elo
-		if n==0 then 0 else summa/n
+			if opp >= 0
+				p = playersByID[opp]
+				result.push p.elo
+		n = result.length
+		if n == 0 then return 0
+		sum(result) / n 
 
 	prettyScore : -> @score().toFixed 1 # .replace('.5','=').replace('.0','&nbsp;').replace("0=","=&nbsp;")
 
@@ -229,8 +235,12 @@ class Player
 		for r in range @res.length # - 1
 			# if @opp[r] == BYE then continue
 			# if @opp[r] == PAUSE then continue
-			if @res[r] in "0=1" # +-?
-				elos.push playersByID[@opp[r]].elo
+			if @opp[r] >= 0
+				if @res[r] in "0=1" # +-?
+					elos.push playersByID[@opp[r]].elo
+					pp += hash[@res[r]]
+			else # både frirond och frånvaro
+				elos.push @elo
 				pp += hash[@res[r]]
 
 		n = elos.length
@@ -358,15 +368,16 @@ class PageTables extends Page
 				q.res = q.res.substring(0,r-1)
 				cell.innerHTML = "&nbsp; - &nbsp;" # p.result r,index-1
 				currentPage.moveFocus index + 1
-			if event.key in "0 1+-"
+			if event.key in "0 1+-?"
 				trans = {"0":"0", ' ':"=", "1": "1", '+':"+", "-": "-", "?":"?"}
 				snart = {"0":"1", ' ':"=", "1": "0", '+':"-", "-": "+", "?":"?"}
-				if p.res.length < p.opp.length
-					if r > 0 then p.res += trans[event.key]
-					if r > 0 then q.res += snart[event.key]
-				else
-					if r > 0 then p.res = backa(p.res) + trans[event.key]
-					if r > 0 then q.res = backa(q.res) + snart[event.key]
+				# if p.res.length < p.opp.length
+				# 	if r > 0 then p.res += trans[event.key]
+				# 	if r > 0 then q.res += snart[event.key]
+				# else
+				if r > 0 then p.res = backa(p.res) + trans[event.key]
+				if r > 0 then q.res = backa(q.res) + snart[event.key]
+				
 				cell.innerHTML = {"0":"0 - 1", ' ':"½ - ½", "1": "1 - 0", "+": "+ - -", "-": "- - +","?":"uppsk"}[event.key] # p.result r,index-1
 				currentPage.moveFocus index + 1
 
@@ -491,6 +502,7 @@ class PageStandings extends Page
 			pageStandings.makeHTML()
 
 		if event.key == 'Enter'
+			echo 'paused',tournament.paused
 			if tournament.pair()
 				currentPage = pageTables
 				pageTables.makeHTML()
@@ -523,7 +535,7 @@ class Tournament
 
 		echo 'playersByScore', playersByScore
 
-	makePaused : -> @paused.join SEPARATOR # (12!34)
+	makePaused : -> (p.id + 1 for p in playersByID when not p.active).join SEPARATOR # (12!34)
 
 	makePlayers : ->
 		players = (p.write() for p in playersByID)
@@ -557,7 +569,7 @@ class Tournament
 	pair : ->
 
 		@virgin = false
-		@downloadFile @makeTournament(), "#{@title}-R#{@round}-#{isoDate()}.txt"
+		# @downloadFile @makeTournament(), "#{@title}-R#{@round}-#{isoDate()}.txt"
 
 		echo ""
 		echo "Lottning av rond #{@round} ====================================================="
@@ -571,12 +583,15 @@ class Tournament
 
 		echo 'tables',@tables
 		# spelaren med högst PR sitter på bord 1. Vid lika avgör bordens lägre spelare
-		if @type == 'FairPair' 
+		if @type == 'FairPair'
 			arr = []
 			echo @tables
 			for [c,d] in @tables
 				a = playersByID[c].performance()
 				b = playersByID[d].performance()
+				abal = playersByID[c].balans()
+				bbal = playersByID[d].balans()
+				echo 'balans',Math.round(a), Math.round(b), abal + bbal
 				arr.push [Math.max(a,b), Math.min(a,b), c, d]
 			arr.sort (a,b) -> if b[0] == a[0] then b[1] - a[1] else b[0] - a[0]
 			@tables = ([c,d] for [a,b,c,d] in arr)
@@ -590,6 +605,12 @@ class Tournament
 			arr.sort (a,b) -> if b[0] == a[0] then b[1] - a[1] else b[0] - a[0]
 			@tables = ([c,d] for [a,b,c,d] in arr)
 
+		for p in playersByID
+			if not p.active 
+				p.opp.push -1
+				p.col += '_'
+				p.res += '0'
+
 		@tables = @makeOppColRes @tables
 		@sort()
 		
@@ -598,6 +619,9 @@ class Tournament
 			echo @matrix i
 
 		currentPage.makeHTML()
+
+		@downloadFile @makeTournament(), "#{@title}-R#{@round}-#{isoDate()}.txt"
+
 		true
 
 	fetchData : (filename, data) ->
@@ -680,7 +704,7 @@ class Tournament
 				p.active = true
 			@paused = @paused.split '!'
 			for id in @paused
-				if id != "" then playersByID[id].active = false
+				if id != "" then playersByID[id-1].active = false
 
 		g.average = 0
 		for i in range g.N
@@ -726,7 +750,7 @@ class Tournament
 
 		true
 
-	ok : (a,b) -> a.id != b.id and a.id not in b.opp and Math.abs(a.balans() + b.balans()) <= 1
+	ok : (pa,pb) -> pa.id != pb.id and pa.id not in pb.opp and Math.abs(pa.balans() + pb.balans()) <= 2 # 1 riskerar tappa två ronder i slutet och ge större elodiffar.
 
 	makeEdges_FAIRPAIR : (iBye) -> # iBye är ett id eller -1
 		arr = []
@@ -741,6 +765,7 @@ class Tournament
 				cost = 9999 - diff ** 1.01
 				if a < b then continue
 				if @ok pa,pb then arr.push [a,b, cost]
+
 		arr.sort (a,b) -> b[2] - a[2] # cost
 		echo 'edges',arr
 		arr
@@ -852,7 +877,7 @@ class Tournament
 						pi.col += 'w'
 						pa.col += 'b'
 
-	# uppdaterar opp och col
+	# uppdaterar opp, col samt res+="_"
 	makeOppColRes : (pairs, flag=false) ->
 		bord = 0
 		result = []
@@ -873,6 +898,9 @@ class Tournament
 
 			@handleCol pa,pb, bord % 2 == 1
 
+			pa.res += '_'
+			pb.res += '_'
+
 			# vid lika färgvärden, alternera
 			n = pa.col.length
 			if pa.col[n-1] == 'w' then result.push [a,b]
@@ -885,7 +913,7 @@ DATE:2025-01-19
 TYPE:FairPair
 ROUND:0
 ROUNDS:4
-PAUSED:1!2
+PAUSED:
 
 1825!JOHANSSON Lennart
 1697!BJÖRKDAHL Göran
@@ -905,6 +933,7 @@ PAUSED:1!2
 """
 
 """
+PAUSED:1!2!3!4
 1825!JOHANSSON Lennart  ! 8 b 1
 1697!BJÖRKDAHL Göran    ! 9 w =
 1684!SILINS Peteris     !10 w 0
