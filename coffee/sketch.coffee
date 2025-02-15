@@ -260,9 +260,14 @@ class Player
 	prettyRes : (r) -> if @res[r] is undefined then "" else	@res[r]
 	prettyCol : (r) -> if @col[r] == 'b' then "ul" else "ur"  # 1 => "black"
 	prettyCol2: (r) -> if @col[r] == 'w' then "lr" else "ll"  # 1 => "white"
+	prettyOpp: (r) -> 
+		opp = @opp[r]
+		if opp == -2 then return '*'
+		if opp == -1 then return 'F'
+		opp + 1
 
 	result: (r,index) ->
-		s = span @opp[r]+1, "class=" + @prettyCol r
+		s = span @prettyOpp(r), "class=" + @prettyCol r
 		t = span @prettyRes(r) , "class=" + @prettyCol2 r
 		td s + t
 
@@ -996,7 +1001,7 @@ PAUSED:1!2!3!4
 """
 
 pageStandings = new PageStandings()
-pageTables = new PageTables() 
+pageTables = new PageTables()
 
 tournament = new Tournament "demo", data
 currentPage = pageStandings
