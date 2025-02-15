@@ -1,12 +1,12 @@
 # ½ •
 
-# Resultat
 # 0 Förlust (0)
 # = Remi (0.5)
 # 1 Vinst (1)
-# + Ej spelad vinst
-# - Ej spelad förlust
-# ? Uppskjutet
+
+# + Ospelad vinst
+# - Ospelad förlust
+# ? Ospelad remi (uppskjutet)
 
 import { Edmonds } from './blossom.js' 
 
@@ -109,6 +109,7 @@ class Player
 	constructor : (@elo, @name, @opp=[], @col="", @res="") ->
 		@active = true
 		@error = false
+		@candidate = false
 		# @opp är en lista med heltal
 		# @col är en sträng med w eller b, ett tecken för varje rond
 		# @res är en sträng med 0=1+-?  # + och - innebär att partiet ej spelats
@@ -119,6 +120,7 @@ class Player
 		results = '01 10 == +- -+ ??'.split ' '
 
 		for r in range @opp.length
+			if @opp[r] < 0 then continue # frirond eller inaktiv
 			p = @
 			q = playersByID[@opp[r]]
 
@@ -143,7 +145,7 @@ class Player
 		result = 0
 		n = @col.length
 		for r in range n
-			if @res[r] in '0=1' # ignorera + och - 
+			if @res[r] in '0=1?' # ignorera + och - 
 				if @col[r] == 'w' then result += 1
 				if @col[r] == 'b' then result -= 1
 		result
@@ -228,20 +230,22 @@ class Player
 		b + b - a
 
 	performance : ->
-		hash = {'0':0, '=': 0.5, '1':1}
+		hash = {'0':0, '=':0.5, '1':1, '+':1, '-':0, '?':0.5}
 		elos = []
 		if @res.length == 0 then return 0
 		pp = 0
-		for r in range @res.length # - 1
+		for r in range @res.length
 			# if @opp[r] == BYE then continue
 			# if @opp[r] == PAUSE then continue
 			if @opp[r] >= 0
-				if @res[r] in "0=1" # +-?
+				if @res[r] in "0=1+-?"
 					elos.push playersByID[@opp[r]].elo
 					pp += hash[@res[r]]
 			else # både frirond och frånvaro
 				elos.push @elo
 				pp += hash[@res[r]]
+
+		# echo 'performance',pp,elos
 
 		n = elos.length
 		if n == 1
@@ -400,7 +404,7 @@ class PageStandings extends Page
 		h += th "pp",'style="border:none"'
 		h += th "bf",'style="border:none"'
 		h += th "*",'style="border:none"'
-		h += th "avg",'style="border:none"'
+		h += th "medel",'style="border:none"'
 		h
 
 	makeHTML : ->
@@ -566,7 +570,44 @@ class Tournament
 		document.body.removeChild a
 		URL.revokeObjectURL url
 
+	handleBye : ->
+		antal = 0
+		candidate = null
+
+		for p in playersByScore
+			echo 'handleBye',p
+			p.candidate = false
+			if p.active
+				antal++
+				if -1 not in p.opp 
+					candidate = p 
+		
+		# antal = playersByID.length - @paused.length
+		# @paused.length troligen ej satt.
+
+		echo 'handleBye',antal
+		if antal % 2 == 1
+			echo 'udda antal spelare'
+			if candidate == null
+				echo 'frirondskandidat saknas!'
+			else
+				candidate.candidate = true
+				candidate.opp.push BYE
+				candidate.col += '_'
+				candidate.res += '1'
+				echo "frirondskandidat = " + candidate.name
+		else
+			candidate = null
+
 	pair : ->
+
+		@handleBye()
+
+		for p in playersByID
+			message = p.check()
+			if message != ""
+				alert message
+				return false
 
 		@virgin = false
 		# @downloadFile @makeTournament(), "#{@title}-R#{@round}-#{isoDate()}.txt"
@@ -607,7 +648,7 @@ class Tournament
 
 		for p in playersByID
 			if not p.active 
-				p.opp.push -1
+				p.opp.push PAUSE
 				p.col += '_'
 				p.res += '0'
 
@@ -755,12 +796,15 @@ class Tournament
 	makeEdges_FAIRPAIR : (iBye) -> # iBye är ett id eller -1
 		arr = []
 		for pa in playersByScore
+			echo 'FAIRPAIR',pa
 			a = pa.id
-			if not pa.active or a == iBye then continue
+			if pa.active == false then continue
+			if pa.candidate == true then continue
 			for pb in playersByScore
 				b = pb.id
 				if a == b then continue
-				if not pb.active or b == iBye then continue
+				if pb.active == false then continue
+				if pb.candidate == true then continue
 				diff = Math.abs pa.elo - pb.elo
 				cost = 9999 - diff ** 1.01
 				if a < b then continue

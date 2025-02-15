@@ -52,8 +52,6 @@ The Swiss Matrix is quite spread out, which indicates many games with large elo 
 * Fields
 	* **TITLE** the title of the tournament. Optional
 	* **DATE** the Date. Optional
-	* **TPP** Tables Per Page. Default 30. Optional
-	* **PPP** Players Per Page. Default 60. Optional
 	* **PAUSED** id:s of paused players. Optional
 	* elos and names, separated with an exclamation sign. Mandatory
 
@@ -68,11 +66,16 @@ If you need more rounds, consider a round robin Berger instead.
 
 ## Questions & Answers
 
-Q1. Sidorna i .prn separeras ej.
-A1. Installera TextPad eller annan editor. Finns inget sätt att få Notepad att hantera FormFeed.
+Q1. Varför har man inte exakt 50% vita ronder?
+A1. Störst obalans kan inträffa vid jämnt antal ronder, t ex 3+5, för en del spelare. Problemet minskar om man använder udda antal ronder.
 
-Q2. Vad menas med EPR?
-A2. EPR betyder Enhanced Performance Rating och innebär att alla spelare får en remi mot medelspelaren vid beräkning av PR. Detta får till följd att ingen spelare hamnar på inf eller -inf.
+## Regler vid beräkning av PR.
 
-Q3. Varför har man inte exakt 50% vita ronder?
-A3. Störst obalans kan inträffa vid jämnt antal ronder, t ex 3+5, för en del spelare. Problemet minskar om man använder udda antal ronder.
+Lite speciellt pga att partipoäng inte används.  
+Eftersom grupperna har liten elo-variation, kan man i vissa lägen bedömas ha spelat mot sig själv, då PR beräknas.
+
+* [opp col res]
+* [ -1  _   +] Får man en frirond räknas det som vinst mot sig själv.
+* [ -1  _   -] Är man deaktiverad räknas det som förlust mot sig själv.
+* [ 27  _   +] Ospelat parti mot avhoppare, räknas som vinst mot avhopparen.
+* [ 27  b   ?] Uppskjutet parti räknas som remi mot motståndaren.
