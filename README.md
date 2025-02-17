@@ -1,81 +1,78 @@
 # FairPair 2
 
-FairPair 2 is a major rewrite of FairPair 1
+FairPair 2 är en total omskrivning av FairPair 1
 
-* Only one page is used
-* Performance Rating with extrapolation (Magnus Karlsson) for 0% and 100% is used
-* Pure HTML and Javascript
+* Enbart två sidor används: Ställning och Bordslista
+* Performance Rating med extrapolation (Magnus Karlsson) för 0% och 100% används
+* Uppskjutna partier: väntevärde beräknas mha elodiff. T ex 100 => 0.64
+* Ren HTML och Javascript
 
-## Advantages with FairPair
+## Fördelar med FairPair
 
 [Try it!](https://christernilsson.github.io/FairPair2)
 
-* FairPair makes players of similar strength meet
-* To make players comparable, Performance Rating is used
+* FairPair parar ihop spelare med samma spelstyrka
+* Performance Rating avgör vem som vann
 
-## Disadvantages with Swiss
+## Nackdelar med Swiss
 
-* A win against the strongest is worth exactly as much as a win against the weakest
-* Big elo gaps gives very little new information
+* En vinst mot den starkaste är värt exakt lika mycket som en vinst mot den svagaste
+* Stora elogap ger mycket lite ny information
 
 ## Motivation
 
 [Swiss Matrix](swiss-78.txt)  
 [ELO Matrix](elo-78.txt)  
 
-The Swiss Matrix shows the games actually played in a tournament paired with Swiss.  
-The ELO Matrix shows which games would actually be played in a tournament paired with FairPair.  
-The diagonal is marked with asterisks as players never meet themselves.  
-The axes contains the elos of the players.  
-The numbers in the matrices are round numbers.  
-The Swiss Matrix is quite spread out, which indicates many games with large elo gaps.  
+Swiss Matrix visar partier som verkligen spelades i en Swiss-turnering  
+ELO Matrix visar vilka partier som skulle spelats i en FairPair-turnering.  
+Diagonalen visar partier som inte spelas pga att man inte möter sig själv.  
+Axlarna innehåller spelarnas elo.  
+Talen i matrisen anger rondnummer.  
+Swiss är ganska utspridd, vilket indikerar stora elogap.  
 
 ## Swiss vs FairPair
 
-* Upper right corner: the strongest players. Small gaps
-* Lower left corner: the weakest players. Small gaps
-* Upper left and lower right corner: Big gaps where strong meets weak
+* Övre högra hörnet
+* Upper left corner: the strongest players
+* Lower right corner: the weakest players
+* Upper right and lower left corner: Big gaps where strong meets weak
 
 [Bubble Chart](https://christernilsson.github.io/2024/027-BubbleChart)  
 
 [Manual](markdown/manual.md)  
 
-## Links
+## Turneringar
 
-[14 players](tournaments/14.txt)  
+[14 spelare](tournaments/14.txt)  
 
-[78 players](tournaments/78.txt)  
+[78 spelare](tournaments/78.txt)  
 
-## Instructions for organizers
-* Edit one of the files above.
-* Add the elos and names of the players, eventually in alphabetical order. Like 1601!NILSSON Christer
-* Fields
-	* **TITLE** the title of the tournament. Optional
-	* **DATE** the Date. Optional
-	* **PAUSED** id:s of paused players. Optional
-	* elos and names, separated with an exclamation sign. Mandatory
+## Instruktioner för lottare
+* Redigera en av filerna ovan.
+* Lägg till elo och namn för spelarna, lämpligen i alfabetisk ordning. T ex 1650!NILSSON Christer
+* Fält
+	* **TITLE** Turneringens namn. Frivillig
+	* **DATE** Startdatum
+	* **ROUND** 0 initialt
+	* **ROUNDS** Antal ronder totalt
+	* **PAUSED** Pausade spelare. Spelarnummer separerade med utropstecken.
+	* elos och namn separerade med utropstecken
 
-[Calculation](markdown/calculation.md)
+[Kalkylering](markdown/calculation.md)
 
-## Number of Rounds Limit
+## Frågor och Svar
 
-14 active players can pair up to  8 rounds (57%).  
-78 active players can pair up to 46 rounds (59%).   
-
-If you need more rounds, consider a round robin Berger instead.
-
-## Questions & Answers
-
-Q1. Varför har man inte exakt 50% vita ronder?
-A1. Störst obalans kan inträffa vid jämnt antal ronder, t ex 3+5, för en del spelare. Problemet minskar om man använder udda antal ronder.
+F1. Varför har man inte exakt 50% vita ronder?  
+S1. Störst obalans kan inträffa vid jämnt antal ronder, t ex 3+5, för en del spelare. Problemet minskar om man använder udda antal ronder.
 
 ## Regler vid beräkning av PR.
 
 Lite speciellt pga att partipoäng inte används.  
-Eftersom grupperna har liten elo-variation, kan man i vissa lägen bedömas ha spelat mot sig själv, då PR beräknas.
+Eftersom grupperna har liten elo-variation, kan man i vissa lägen bedömas ha spelat mot sig själv, då PR beräknas.  
 
 * [opp col res]
 * [ -1  _   +] Får man en frirond räknas det som vinst mot sig själv.
 * [ -1  _   -] Är man deaktiverad räknas det som förlust mot sig själv.
 * [ 27  _   +] Ospelat parti mot avhoppare, räknas som vinst mot avhopparen.
-* [ 27  b   ?] Uppskjutet parti räknas som remi mot motståndaren.
+* [ 27  b   ?] Uppskjutet parti: väntevärdet beräknas mha elodiff.

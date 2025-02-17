@@ -71,7 +71,6 @@
 |:-:|-|
 |TITLE|Turneringens namn|
 |DATE|Turneringens startdatum|
-|TYPE|FairPair eller Swiss|
 |ROUND|0 initialt|
 |ROUNDS|antal ronder totalt|
 |PAUSED|id för pausade spelare separerade med utropstecken|
