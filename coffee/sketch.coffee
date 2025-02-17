@@ -1,12 +1,12 @@
 # ½ •
 
-# 0 Förlust (0)
-# = Remi (0.5)
-# 1 Vinst (1)
+# 0 Förlust (0.0)
+# = Remi    (0.5)
+# 1 Vinst   (1.0)
 
 # + Ospelad vinst
 # - Ospelad förlust
-# ? Ospelad remi (uppskjutet)
+# ? Ospelad uppskjutet, använd elodiff för att beräkna väntevärdet
 
 import { Edmonds } from './blossom.js' 
 
@@ -189,7 +189,7 @@ class Player
 		result.join SEPARATOR
 
 	score : ->
-		hash = {'0':0, '=': 0.5, '1':1, '+':1, '-':0, '?':0.5}
+		hash = {'0':0, '=': 0.5, '1':1, '+':1, '-':0, '?':0.0}
 		summa = 0
 		if @opp.length == 0 then return 0
 		for i in range @res.length - 1
@@ -230,7 +230,7 @@ class Player
 		b + b - a
 
 	performance : ->
-		hash = {'0':0, '=':0.5, '1':1, '+':1, '-':0, '?':0.5}
+		hash = {'0':0, '=':0.5, '1':1, '+':1, '-':0} #, '?':0.5}
 		elos = []
 		if @res.length == 0 then return 0
 		pp = 0
@@ -238,8 +238,13 @@ class Player
 			# if @opp[r] == BYE then continue
 			# if @opp[r] == PAUSE then continue
 			if @opp[r] >= 0
-				if @res[r] in "0=1+-?"
-					elos.push playersByID[@opp[r]].elo
+				# @res[r] kan vara underscore, vilket ska ignoreras
+				q = playersByID[@opp[r]]
+				if @res[r] == "?"
+					elos.push q.elo
+					pp += xs [q.elo], @elo
+				else if @res[r] in "0=1+-"
+					elos.push q.elo
 					pp += hash[@res[r]]
 			else # både frirond och frånvaro
 				elos.push @elo
