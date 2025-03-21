@@ -192,14 +192,15 @@ class Player
 		hash = {'0':0, '=': 0.5, '1':1, '+':1, '-':0, '?':0.0}
 		summa = 0
 		if @opp.length == 0 then return 0
-		for i in range @res.length - 1
+		for i in range tournament.round - 1 # @res.length - 1
 			for ch in @res[i]
 				summa += hash[ch]
 		summa
 
 	average : ->
 		result = []
-		n = @opp.length - 1
+		# n = @opp.length - 1
+		n = tournament.round - 1
 		if n == -1 then return 0
 		for i in range n
 			opp = @opp[i]
@@ -234,7 +235,7 @@ class Player
 		elos = []
 		if @res.length == 0 then return 0
 		pp = 0
-		for r in range @res.length
+		for r in range tournament.round - 1 # @res.length
 			# if @opp[r] == BYE then continue
 			# if @opp[r] == PAUSE then continue
 			if @opp[r] >= 0
