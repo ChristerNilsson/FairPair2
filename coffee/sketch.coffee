@@ -8,6 +8,8 @@
 # - Ospelad förlust
 # ? Ospelad uppskjutet, använd elodiff för att beräkna väntevärdet
 
+# _ innebär att resultat saknas
+
 import { Edmonds } from './blossom.js' 
 
 range = _.range
@@ -117,7 +119,7 @@ class Player
 	check : -> # Kontrollera att opponent, färger och resultat är konsistenta
 		
 		colors = 'bw wb'.split ' '
-		results = '01 10 == +- -+ ??'.split ' '
+		results = '01 10 == +- -+ ?? __'.split ' '
 
 		for r in range @opp.length
 			if @opp[r] < 0 then continue # frirond eller inaktiv
@@ -730,7 +732,8 @@ class Tournament
 					return
 				for i in range 2,arr.length
 					item = arr[i]
-					if not /^-?\d+(w|b)[0=1+-\?]$/.test item
+					echo 'item',item
+					if not /^-?\d+(w|b)[_0=1+-\?]$/.test item
 						alert "#{item}\n in line #{nr+1}\n must follow the format <number> <color> <result>\n  where color is in wb\n  and result is in 0=1+-?"
 						return
 				hash.PLAYERS.push arr.slice 0, @round + 2
@@ -974,6 +977,7 @@ PAUSED:
 1697!BJÖRKDAHL Göran
 1684!SILINS Peteris
 1681!STOLOV Leonid
+1650!Christer Nilsson
 1644!PETTERSSON Lars-Åke
 1598!AIKIO Onni
 1598!ISRAEL Dan
