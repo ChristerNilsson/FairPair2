@@ -51,6 +51,13 @@ header = document.getElementById 'header'
 
 isoDate = -> new Date().toLocaleString('sv-se',{hour12:false}).replace(',','').replace(':','h').substring(0,16)
 
+padCenter = (str, length, char = " ") ->
+	padding = length - str.length
+	leftPad = Math.floor(padding / 2)
+	rightPad = padding - leftPad
+	char.repeat(leftPad) + str + char.repeat(rightPad)
+
+
 backa = (s) -> s.substring(0,s.length-1)
 console.assert "ab" == backa "abc"
 console.assert "a" == backa "ab"
@@ -190,6 +197,12 @@ class Player
 		result.push ocr.join SEPARATOR
 		result.join SEPARATOR
 
+	# writeResult : ->
+	# 	rounds = []
+	# 	for i in range tournament.round
+	# 		rounds.push "#{@opp[i]}#{@col[i]}#{@res[i]}" 
+	# 	echo "#{@elo} #{@name} #{rounds.join ' '} #{@performance()}"
+
 	score : ->
 		hash = {'0':0, '=': 0.5, '1':1, '+':1, '-':0, '?':0.0}
 		summa = 0
@@ -253,7 +266,6 @@ class Player
 				elos.push @elo
 				pp += hash[@res[r]]
 
-		# echo 'performance',pp,elos
 
 		n = elos.length
 		if n == 1
@@ -264,6 +276,7 @@ class Player
 			if pp == n then return @extrapolate n-1,n-0.5,elos
 
 		@performance_rating elos,pp
+		# echo 'performance',elos,pp,result
 
 	prettyRes : (r) -> if @res[r] is undefined then "" else	@res[r]
 	prettyCol : (r) -> if @col[r] == 'b' then "ul" else "ur"  # 1 => "black"
@@ -278,6 +291,8 @@ class Player
 		s = span @prettyOpp(r), "class=" + @prettyCol r
 		t = span @prettyRes(r) , "class=" + @prettyCol2 r
 		td s + t
+
+	finalResult: (r,index) -> "#{@prettyOpp(r)}#{@col[r]}#{@res[r]}"
 
 class Page
 	constructor : ->
@@ -421,8 +436,7 @@ class PageStandings extends Page
 		h
 
 	makeHTML : ->
-		R = tournament.round # playersByScore[0].opp.length
-		# echo 'PageStandings.makeHTML',R
+		R = tournament.round
 
 		ta_left   = "style='text-align:left'"
 		ta_right  = "style='text-align:right'"
@@ -435,10 +449,8 @@ class PageStandings extends Page
 		t = ""
 		for i in range playersByScore.length
 			p = playersByScore[i]
-			#if i==0 then current = p.id
 			s = ""
 
-			#s += td i+1,ta_right # pos
 			s += td p.id+1,ta_right # id
 			s += td p.name,ta_left # namn
 			s += td p.elo # elo
@@ -446,7 +458,6 @@ class PageStandings extends Page
 			for r in range R
 				s += p.result r,i # ronder
 				
-			# pr
 			pr = p.performance()
 			if pr < 3999
 				s += td pr.toFixed(decimals) #,ta_right
@@ -455,25 +466,12 @@ class PageStandings extends Page
 
 			s += td p.prettyScore(),ta_right # pp
 
-			# s += td "",'style="width:5px;border-top:none; border-bottom:none"' # empty
-
-			# s += td p.table + p.prettyCol(R-1)[0] + p.prettyCol2(R-1)[0],ta_center
-			# bf
 			if p.table
 				bf = p.table + {l:'B',r:'W'}[p.prettyCol(R-1)[1]]
 			else
 				bf = ""
 			s += td bf, ta_center_strong
 
-			# diff
-			# if R >= 1 then s += td playersByID[p.opp[R-1]].elo - p.elo, ta_right else s += td "",ta_right
-
-			# id:bf
-			# q = playersByID[i]
-			# if R >= 1 then s += td "#{i+1}:#{q.table + {l:'B',r:'W'}[q.prettyCol(R-1)[1]]}" , ta_right else s += td "",ta_right
-
-			# s += td matrix i
-			# echo matrix i
 			s += td if p.active then "*" else ""
 			s += td p.average().toFixed 1
 			t += tr s, "tabindex=#{i}"
@@ -481,6 +479,7 @@ class PageStandings extends Page
 		t = tr(@headers(R)) + t
 		@app.innerHTML = table t,'style="border:none"'
 		@moveFocus 0
+
 
 	handleKeyDown : (event) -> # Enkelrond
 
@@ -555,6 +554,9 @@ class Tournament
 	makePaused : -> (p.id + 1 for p in playersByID when not p.active).join SEPARATOR # (12!34)
 
 	makePlayers : ->
+		# for p in playersByScore
+		# 	p.writeResult()
+
 		players = (p.write() for p in playersByID)
 		players.join "\n"
 
@@ -588,7 +590,7 @@ class Tournament
 		candidate = null
 
 		for p in playersByScore
-			echo 'handleBye',p
+			#echo 'handleBye',p
 			p.candidate = false
 			if p.active
 				antal++
@@ -611,6 +613,42 @@ class Tournament
 				echo "frirondskandidat = " + candidate.name
 		else
 			candidate = null
+
+	makeTxt : ->
+		result = []
+		R = tournament.round
+		prs = (p.performance() for p in playersByID)
+		decimals = findNumberOfDecimals prs
+
+		# Header
+		result.push 'FairPair' + ' ' + tournament.title + ' ' + tournament.date + ' ' + tournament.rounds + ' ronder'
+		result.push ""
+		line = []
+		line.push 'id'.padStart 3
+		line.push ' namn'.padEnd 20
+		line.push '  elo '
+		for i in range R - 1
+			line.push padCenter "#{i+1}", 6
+		line.push '  pr'
+		result.push line.join ''
+
+		# players
+		for i in range playersByScore.length
+			p = playersByScore[i]
+			s = []
+			s.push "#{p.id+1}".padStart 3
+			s.push " #{p.name}".padEnd 20
+			s.push " #{p.elo}".padEnd 4
+
+			for r in range R - 1
+				s.push p.finalResult(r,i).padStart 6
+
+			pr = p.performance()
+			if pr < 3999
+				s.push ' ' + pr.toFixed(decimals)
+
+			result.push s.join ''
+		result.join "\n"
 
 	pair : ->
 
@@ -645,7 +683,7 @@ class Tournament
 				b = playersByID[d].performance()
 				abal = playersByID[c].balans()
 				bbal = playersByID[d].balans()
-				echo 'balans',Math.round(a), Math.round(b), abal + bbal
+				# echo 'balans',Math.round(a), Math.round(b), abal + bbal
 				arr.push [Math.max(a,b), Math.min(a,b), c, d]
 			arr.sort (a,b) -> if b[0] == a[0] then b[1] - a[1] else b[0] - a[0]
 			@tables = ([c,d] for [a,b,c,d] in arr)
@@ -668,12 +706,14 @@ class Tournament
 		@tables = @makeOppColRes @tables
 		@sort()
 		
-		echo 'playersByID',playersByID
-		for i in range playersByID.length
-			echo @matrix i
+		# echo 'playersByID',playersByID
+		# for i in range playersByID.length
+		# 	echo @matrix i
 
 		currentPage.makeHTML()
 
+		if tournament.round == tournament.rounds + 1
+			@downloadFile @makeTxt(), "#{@title}-Resultat-#{isoDate()}.txt"
 		@downloadFile @makeTournament(), "#{@title}-R#{@round}-#{isoDate()}.txt"
 
 		true
@@ -748,7 +788,7 @@ class Tournament
 		playersByID = []
 		for i in range g.N
 			player = new Player i
-			echo players[i]
+			# echo players[i]
 			player.read players[i]
 			playersByID.push player
 
@@ -810,7 +850,7 @@ class Tournament
 	makeEdges_FAIRPAIR : (iBye) -> # iBye är ett id eller -1
 		arr = []
 		for pa in playersByScore
-			echo 'FAIRPAIR',pa
+			# echo 'FAIRPAIR',pa
 			a = pa.id
 			if pa.active == false then continue
 			if pa.candidate == true then continue
