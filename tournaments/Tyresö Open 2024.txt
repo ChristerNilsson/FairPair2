@@ -1,4 +1,7 @@
 TITLE:Tyresö Open 2024
+ROUND:0
+ROUNDS:8
+
 2416!Hampus Sörensen
 2413!Michael Wiedenkeller
 2366!Joar Ölund

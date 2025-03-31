@@ -51,6 +51,10 @@ header = document.getElementById 'header'
 
 isoDate = -> new Date().toLocaleString('sv-se',{hour12:false}).replace(',','').replace(':','h').substring(0,16)
 
+shorten = (s,n) ->
+	if s.length > n then s = s.substring 0,n
+	s.padEnd n
+
 padCenter = (str, length, char = " ") ->
 	padding = length - str.length
 	leftPad = Math.floor(padding / 2)
@@ -551,6 +555,11 @@ class Tournament
 
 		echo 'playersByScore', playersByScore
 
+	missingResults : ->
+		for p in playersByID
+			if p.active and "_" == p.res.substring(p.res.length-1) then return true
+		false
+
 	makePaused : -> (p.id + 1 for p in playersByID when not p.active).join SEPARATOR # (12!34)
 
 	makePlayers : ->
@@ -625,11 +634,11 @@ class Tournament
 		result.push ""
 		line = []
 		line.push 'id'.padStart 3
-		line.push ' namn'.padEnd 20
+		line.push ' namn'.padEnd 24
 		line.push '  elo '
 		for i in range R - 1
 			line.push padCenter "#{i+1}", 6
-		line.push '  pr'
+		line.push '   pr'
 		result.push line.join ''
 
 		# players
@@ -637,20 +646,21 @@ class Tournament
 			p = playersByScore[i]
 			s = []
 			s.push "#{p.id+1}".padStart 3
-			s.push " #{p.name}".padEnd 20
+			s.push shorten " #{p.name}", 24
 			s.push " #{p.elo}".padEnd 4
 
 			for r in range R - 1
 				s.push p.finalResult(r,i).padStart 6
 
 			pr = p.performance()
-			if pr < 3999
-				s.push ' ' + pr.toFixed(decimals)
+			if pr < 3999 then s.push ' ' + pr.toFixed(decimals).padStart 7
 
 			result.push s.join ''
 		result.join "\n"
 
 	pair : ->
+
+		if @missingResults() then return
 
 		@handleBye()
 
