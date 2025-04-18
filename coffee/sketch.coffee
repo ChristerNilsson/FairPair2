@@ -87,8 +87,8 @@ console.assert 1 == findNumberOfDecimals [1234,1234.4]
 console.assert 3 == findNumberOfDecimals [1234.146,1234.147]
 
 export handleFile = (filename,data) ->
-	echo 'handleFile',filename
-	echo data
+	# echo 'handleFile',filename
+	# echo data
 	tournament = new Tournament filename,data
 	pageStandings.makeHTML()
 	pageStandings.makeHeader()
@@ -369,6 +369,9 @@ class PageTables extends Page
 		# echo 'totalDiff',totalDiff
 		t = tr(@headers(R)) + t
 		@app.innerHTML = table t,'style="border:none"'
+		footer = document.getElementById 'footer'
+		if tournament.candidate then footer.innerHTML = "Frirond: " + tournament.candidate.name 
+
 		@moveFocus 0
 
 
@@ -388,7 +391,7 @@ class PageTables extends Page
 		if event.key == 'End'       then currentPage.moveFocus tournament.tables.length - 1
 
 		if event.key == 'Enter'
-			echo 'Pair'
+			#echo 'Pair'
 			if tournament.pair()
 				pageTables.makeHTML()
 
@@ -487,11 +490,13 @@ class PageStandings extends Page
 
 	handleKeyDown : (event) -> # Enkelrond
 
-		if event.ctrlKey && event.shiftKey && event.key.toLowerCase() == "i"
-			event.preventDefault()
-			return
+		# if event.ctrlKey && event.shiftKey && event.key.toLowerCase() == "i"
+		# 	event.preventDefault()
+		# 	return
 
-		echo 'handleKeyDown',event.key
+		if event.key in ['Control' ,'Shift'] then return
+
+		#echo 'handleKeyDown',event.key
 		# if event.key in [' ','ArrowDown','ArrowUp'] then event.preventDefault()
 
 		if event.key in ['ArrowLeft','ArrowRight']
@@ -522,7 +527,7 @@ class PageStandings extends Page
 			pageStandings.makeHTML()
 
 		if event.key == 'Enter'
-			echo 'paused',tournament.paused
+			#echo 'paused',tournament.paused
 			if tournament.pair()
 				currentPage = pageTables
 				pageTables.makeHTML()
@@ -553,7 +558,7 @@ class Tournament
 		playersByScore = _.clone playersByID
 		@tables = []
 
-		echo 'playersByScore', playersByScore
+		#echo 'playersByScore', playersByScore
 
 	missingResults : ->
 		for p in playersByID
@@ -583,7 +588,7 @@ class Tournament
 		
 	downloadFile : (txt,filename) ->
 		# filename = filename.substring 0,@title.length
-		echo 'downloadFile',filename
+		#echo 'downloadFile',filename
 		blob = new Blob [txt], { type: 'text/plain' }
 		url = URL.createObjectURL blob
 		a = document.createElement 'a'
@@ -596,7 +601,7 @@ class Tournament
 
 	handleBye : ->
 		antal = 0
-		candidate = null
+		@candidate = null
 
 		for p in playersByScore
 			#echo 'handleBye',p
@@ -604,24 +609,26 @@ class Tournament
 			if p.active
 				antal++
 				if -1 not in p.opp 
-					candidate = p 
+					@candidate = p 
 		
 		# antal = playersByID.length - @paused.length
 		# @paused.length troligen ej satt.
 
-		echo 'handleBye',antal
+		#echo 'handleBye',antal
 		if antal % 2 == 1
-			echo 'udda antal spelare'
-			if candidate == null
+			#echo 'udda antal spelare'
+			if @candidate == null
 				echo 'frirondskandidat saknas!'
 			else
-				candidate.candidate = true
-				candidate.opp.push BYE
-				candidate.col += '_'
-				candidate.res += '1'
-				echo "frirondskandidat = " + candidate.name
+				@candidate.candidate = true
+				@candidate.opp.push BYE
+				@candidate.col += '_'
+				@candidate.res += '1'
+				echo "frirondskandidat = " + @candidate.name
 		else
-			candidate = null
+			@candidate = null
+
+	medalize : (i) -> if i<9 then 'GSB456789'[i] else '•'
 
 	makeTxt : ->
 		result = []
@@ -633,6 +640,7 @@ class Tournament
 		result.push 'FairPair' + ' ' + tournament.title + ' ' + tournament.date + ' ' + tournament.rounds + ' ronder'
 		result.push ""
 		line = []
+		line.push 'p'.padStart 1
 		line.push 'id'.padStart 3
 		line.push ' namn'.padEnd 24
 		line.push '  elo '
@@ -645,6 +653,7 @@ class Tournament
 		for i in range playersByScore.length
 			p = playersByScore[i]
 			s = []
+			s.push "#{@medalize(i)}".padStart 1
 			s.push "#{p.id+1}".padStart 3
 			s.push shorten " #{p.name}", 24
 			s.push " #{p.elo}".padEnd 4
@@ -683,11 +692,11 @@ class Tournament
 		@round += 1
 		currentPage.makeHeader()
 
-		echo 'tables',@tables
+		#echo 'tables',@tables
 		# spelaren med högst PR sitter på bord 1. Vid lika avgör bordens lägre spelare
 		if @type == 'FairPair'
 			arr = []
-			echo @tables
+			#echo @tables
 			for [c,d] in @tables
 				a = playersByID[c].performance()
 				b = playersByID[d].performance()
@@ -714,6 +723,10 @@ class Tournament
 				p.res += '0'
 
 		@tables = @makeOppColRes @tables
+
+		for i in range playersByID.length
+			echo @matrix i
+
 		@sort()
 		
 		# echo 'playersByID',playersByID
@@ -723,7 +736,9 @@ class Tournament
 		currentPage.makeHTML()
 
 		if tournament.round == tournament.rounds + 1
-			@downloadFile @makeTxt(), "#{@title}-Resultat-#{isoDate()}.txt"
+			filename = "#{@title}-Resultat-#{isoDate()}.txt"
+			@downloadFile @makeTxt(), filename
+			alert "Glöm inte ta en kopia på " + filename + " i Downloads (eller skriva ut) !"
 		@downloadFile @makeTournament(), "#{@title}-R#{@round}-#{isoDate()}.txt"
 
 		true
@@ -759,7 +774,7 @@ class Tournament
 		@title = hash.TITLE
 		@date = hash.DATE
 		@type = hash.TYPE
-		echo @type
+		#echo @type
 		@round = parseInt hash.ROUND
 		@rounds = parseInt hash.ROUNDS
 		@paused = hash.PAUSED # list of one based ids
@@ -828,7 +843,7 @@ class Tournament
 			message = p.check()
 			if message != "" then alert message
 
-		echo 'playersByID', playersByID 
+		#echo 'playersByID', playersByID 
 
 		# extract @pairs from the last round
 		@pairs = []
@@ -847,11 +862,13 @@ class Tournament
 					pb.chair = 2 * @pairs.length
 					[b,a]
 
-		echo '@pairs',@pairs
+		#echo '@pairs',@pairs
 
 		# @dump 'fetch'
 		
 		@virgin = true
+
+		alert "Efter varje lottning kan man ta en kopia på senaste filen i Downloads! (Alternativt mata in resultaten från bordslistorna)"
 
 		true
 
@@ -875,7 +892,7 @@ class Tournament
 				if @ok pa,pb then arr.push [a,b, cost]
 
 		arr.sort (a,b) -> b[2] - a[2] # cost
-		echo 'edges',arr
+		#echo 'edges',arr
 		arr
 
 	makeEdges_SWISS : (iBye) -> # iBye är ett id eller -1
@@ -989,7 +1006,11 @@ class Tournament
 	makeOppColRes : (pairs, flag=false) ->
 		bord = 0
 		result = []
-		echo pairs
+		#echo pairs
+
+		for p in playersByID
+			p.table = null
+
 		for pair in pairs
 			a = pair[0]
 			b = pair[1]

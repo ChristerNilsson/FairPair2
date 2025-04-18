@@ -77,12 +77,12 @@
 		<input id="input" type="file" accept=".txt" onchange="handleFileChange(event)">
 		<div id="header"></div>
 		<div id="app"></div>
+		<div id="footer" style="text-align:center"></div>
 
 		<script type="module">
 			import { handleFile } from './coffee/sketch.js';
 			window.handleFileChange = function(event) {
 				const file = event.target.files[0];
-				console.log(file.name);
 				if (file) {file.text().then(text => {handleFile(file.name,text);}).catch(error => {console.error('Error reading file:', error);});}
 				const button = document.getElementById('input');
 				button.style.display = 'none';
